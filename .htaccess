@@ -1,0 +1,16 @@
+Options -Indexes
+AddDefaultCharset UTF-8
+
+RewriteEngine On
+RewriteRule ^note=(.+)$ index.php?note=$1 [L,QSA,B]
+RewriteRule ^note/(.+)$ index.php?note=$1 [L,QSA,B]
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+<FilesMatch "^(config\.php|schema\.sql|README\.md)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>

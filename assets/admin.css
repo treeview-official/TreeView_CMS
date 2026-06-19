@@ -1,0 +1,745 @@
+body.admin-layout {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+}
+
+body.admin-layout * {
+    box-sizing: border-box;
+}
+
+body.admin-layout .admin-console {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+}
+
+body.admin-layout .admin-tab-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+body.admin-layout .admin-sidebar {
+    position: sticky;
+    top: 0;
+    display: grid;
+    align-content: start;
+    gap: 18px;
+    height: 100vh;
+    min-width: 0;
+    border-right: 1px solid var(--line);
+    background: color-mix(in srgb, var(--panel) 92%, var(--bg) 8%);
+    padding: 28px 18px;
+    overflow-y: auto;
+}
+
+body.admin-layout .admin-brand {
+    display: grid;
+    gap: 4px;
+    color: var(--ink);
+    text-decoration: none;
+}
+
+body.admin-layout .admin-brand strong {
+    font-size: 22px;
+    line-height: 1.1;
+}
+
+body.admin-layout .admin-brand span,
+body.admin-layout .admin-sidebar-card span,
+body.admin-layout .admin-sidebar-card em,
+body.admin-layout .admin-topbar span,
+body.admin-layout .admin-hero-metrics span {
+    color: var(--muted);
+    font-size: 12px;
+    font-style: normal;
+}
+
+body.admin-layout .admin-tab-list {
+    display: grid;
+    gap: 6px;
+    width: 100%;
+    max-width: none;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+}
+
+body.admin-layout .admin-tab-list label {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 42px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+body.admin-layout #tab-dashboard:checked ~ .admin-sidebar .admin-tab-list label[for="tab-dashboard"],
+body.admin-layout #tab-create:checked ~ .admin-sidebar .admin-tab-list label[for="tab-create"],
+body.admin-layout #tab-documents:checked ~ .admin-sidebar .admin-tab-list label[for="tab-documents"],
+body.admin-layout #tab-categories:checked ~ .admin-sidebar .admin-tab-list label[for="tab-categories"],
+body.admin-layout #tab-general:checked ~ .admin-sidebar .admin-tab-list label[for="tab-general"],
+body.admin-layout #tab-pages:checked ~ .admin-sidebar .admin-tab-list label[for="tab-pages"],
+body.admin-layout #tab-inbox:checked ~ .admin-sidebar .admin-tab-list label[for="tab-inbox"] {
+    border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+    background: var(--accent);
+    color: #fff;
+}
+
+body.admin-layout .admin-sidebar-card {
+    display: grid;
+    gap: 6px;
+    margin-top: 8px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--panel) 72%, var(--bg) 28%);
+    padding: 14px;
+}
+
+body.admin-layout .admin-sidebar-card strong,
+body.admin-layout .admin-sidebar-card em {
+    overflow-wrap: anywhere;
+}
+
+body.admin-layout .admin-main {
+    display: grid;
+    align-content: start;
+    gap: 22px;
+    min-width: 0;
+    padding: 0 38px 54px;
+}
+
+body.admin-layout .admin-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--bg) 90%, var(--panel) 10%);
+    padding: 16px 0;
+    backdrop-filter: blur(10px);
+}
+
+body.admin-layout .admin-topbar div {
+    display: grid;
+    gap: 3px;
+}
+
+body.admin-layout .admin-topbar strong {
+    font-size: 16px;
+}
+
+body.admin-layout .admin-topbar nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+body.admin-layout .admin-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 10px 0 0;
+    border-bottom: 1px solid var(--line);
+    padding: 18px 0 28px;
+}
+
+body.admin-layout .admin-hero h1 {
+    margin: 6px 0 10px;
+    font-size: clamp(44px, 6vw, 82px);
+    line-height: 1;
+}
+
+body.admin-layout .admin-hero p {
+    max-width: 660px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.65;
+}
+
+body.admin-layout .admin-kicker {
+    color: var(--accent-dark);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+body.admin-layout .admin-hero-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+body.admin-layout .admin-hero-metrics span {
+    display: grid;
+    min-width: 120px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--panel) 82%, var(--bg) 18%);
+    padding: 12px 14px;
+}
+
+body.admin-layout .admin-hero-metrics b {
+    color: var(--ink);
+    font-size: 26px;
+}
+
+body.admin-layout .admin-tab-panel {
+    display: none;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+}
+
+body.admin-layout #tab-dashboard:checked ~ .admin-main .admin-panel-dashboard,
+body.admin-layout #tab-create:checked ~ .admin-main .admin-panel-create,
+body.admin-layout #tab-documents:checked ~ .admin-main .admin-panel-documents,
+body.admin-layout #tab-categories:checked ~ .admin-main .admin-panel-categories,
+body.admin-layout #tab-general:checked ~ .admin-main .admin-panel-general,
+body.admin-layout #tab-pages:checked ~ .admin-main .admin-panel-pages,
+body.admin-layout #tab-inbox:checked ~ .admin-main .admin-panel-inbox {
+    display: grid;
+    gap: 18px;
+}
+
+body.admin-layout .admin-dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+body.admin-layout .admin-dashboard-stats div,
+body.admin-layout .admin-data-card,
+body.admin-layout .admin-section-head,
+body.admin-layout .admin-field-grid,
+body.admin-layout .admin-page-editors,
+body.admin-layout .admin-inbox-list {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--panel) 84%, var(--bg) 16%);
+}
+
+body.admin-layout .admin-dashboard-stats div {
+    display: grid;
+    gap: 6px;
+    border-top: 3px solid color-mix(in srgb, var(--accent) 70%, var(--line));
+    padding: 15px;
+}
+
+body.admin-layout .admin-dashboard-stats span,
+body.admin-layout .admin-dashboard-stats em,
+body.admin-layout .admin-card-head span,
+body.admin-layout .admin-table-list em,
+body.admin-layout .admin-table-list i {
+    color: var(--muted);
+    font-size: 12px;
+    font-style: normal;
+}
+
+body.admin-layout .admin-dashboard-stats strong {
+    font-size: 24px;
+    line-height: 1;
+}
+
+body.admin-layout .admin-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+body.admin-layout .admin-data-card {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    min-width: 0;
+    padding: 16px;
+}
+
+body.admin-layout .admin-data-card.wide {
+    grid-column: 1 / -1;
+}
+
+body.admin-layout .admin-card-head,
+body.admin-layout .admin-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 10px;
+}
+
+body.admin-layout .admin-section-head {
+    padding: 18px;
+}
+
+body.admin-layout .admin-card-head h2,
+body.admin-layout .admin-section-head h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+body.admin-layout .admin-field-grid,
+body.admin-layout .admin-page-editors,
+body.admin-layout .admin-split-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+body.admin-layout .admin-field-grid,
+body.admin-layout .admin-page-editors,
+body.admin-layout .admin-editor-card {
+    padding: 18px;
+}
+
+body.admin-layout .admin-wide-editor {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.admin-layout .admin-wide-editor label:nth-of-type(n+3),
+body.admin-layout .admin-wide-editor .admin-security-note,
+body.admin-layout .admin-wide-editor .admin-form-actions {
+    grid-column: 1 / -1;
+}
+
+body.admin-layout .admin-editor-card.embedded {
+    margin-top: 12px;
+    border-color: color-mix(in srgb, var(--accent) 18%, var(--line));
+    box-shadow: none;
+}
+
+body.admin-layout .admin-field-grid .wide,
+body.admin-layout .admin-page-editors label {
+    grid-column: 1 / -1;
+}
+
+body.admin-layout .admin-editor-card {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--panel) 84%, var(--bg) 16%);
+}
+
+body.admin-layout .admin-settings-form label,
+body.admin-layout label {
+    display: grid;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+body.admin-layout textarea,
+body.admin-layout input[type="email"],
+body.admin-layout input[type="text"],
+body.admin-layout input[type="number"],
+body.admin-layout select {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--ink);
+    padding: 11px 12px;
+}
+
+body.admin-layout textarea {
+    resize: vertical;
+    line-height: 1.55;
+}
+
+body.admin-layout .admin-code-textarea {
+    min-height: 420px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+}
+
+body.admin-layout .admin-security-note {
+    margin: -4px 0 0;
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 7%, var(--panel));
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 10px 12px;
+}
+
+body.admin-layout .admin-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+    grid-column: 1 / -1;
+}
+
+body.admin-layout .admin-inline-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+body.admin-layout .admin-inline-search select {
+    width: auto;
+    min-width: 120px;
+}
+
+body.admin-layout .admin-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-top: 8px;
+}
+
+body.admin-layout .admin-pagination a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    min-height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+body.admin-layout .admin-pagination a.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+}
+
+body.admin-layout .admin-note-insight {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+body.admin-layout .admin-note-insight div {
+    display: grid;
+    gap: 5px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--panel) 70%, transparent);
+    padding: 12px;
+}
+
+body.admin-layout .admin-note-insight span {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+body.admin-layout .admin-note-insight strong {
+    overflow-wrap: anywhere;
+    font-size: 17px;
+}
+
+body.admin-layout .admin-card-head.compact {
+    margin-top: 8px;
+}
+
+body.admin-layout .admin-empty-detail {
+    display: grid;
+    gap: 8px;
+    min-height: 240px;
+    place-content: center;
+    text-align: center;
+}
+
+body.admin-layout .admin-empty-detail h2 {
+    margin: 0;
+    font-size: 22px;
+}
+
+body.admin-layout .admin-empty-detail p {
+    max-width: 340px;
+    margin: 0 auto;
+    color: var(--muted);
+    line-height: 1.65;
+}
+
+body.admin-layout .admin-table-list,
+body.admin-layout .admin-search-stack,
+body.admin-layout .admin-tag-cloud,
+body.admin-layout .admin-visit-chart,
+body.admin-layout .admin-inbox-list {
+    display: grid;
+    gap: 8px;
+}
+
+body.admin-layout .admin-inbox-list {
+    padding: 18px;
+}
+
+body.admin-layout .admin-table-list a,
+body.admin-layout .admin-search-stack a {
+    display: grid;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--panel) 64%, transparent);
+    padding: 10px;
+}
+
+body.admin-layout .admin-table-list a {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+}
+
+body.admin-layout .admin-manage-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+}
+
+body.admin-layout .admin-manage-row > a {
+    min-width: 0;
+}
+
+body.admin-layout .admin-manage-row form {
+    margin: 0;
+}
+
+body.admin-layout .admin-table-list span {
+    display: grid;
+    min-width: 0;
+    gap: 3px;
+}
+
+body.admin-layout .admin-table-list strong,
+body.admin-layout .admin-table-list em,
+body.admin-layout .admin-search-stack span,
+body.admin-layout .admin-tag-cloud span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.admin-layout .admin-table-list b,
+body.admin-layout .admin-tag-cloud b,
+body.admin-layout .admin-search-stack b {
+    color: var(--accent-dark);
+    font-size: 12px;
+}
+
+body.admin-layout .admin-visit-chart div {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr) minmax(150px, auto);
+    align-items: center;
+    gap: 8px;
+}
+
+body.admin-layout .admin-visit-chart span,
+body.admin-layout .admin-visit-chart em {
+    color: var(--muted);
+    font-size: 12px;
+    font-style: normal;
+}
+
+body.admin-layout .admin-visit-chart i,
+body.admin-layout .admin-visit-chart b {
+    display: block;
+    height: 10px;
+    border-radius: 999px;
+}
+
+body.admin-layout .admin-visit-chart i {
+    background: var(--accent);
+}
+
+body.admin-layout .admin-visit-chart b {
+    background: var(--green);
+}
+
+body.admin-layout .admin-tag-cloud {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
+body.admin-layout .admin-tag-cloud a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 11px;
+}
+
+body.admin-layout .admin-category-list {
+    display: grid;
+    gap: 8px;
+}
+
+body.admin-layout .admin-category-list > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+}
+
+body.admin-layout .admin-category-list a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 11px;
+}
+
+body.admin-layout .admin-category-list strong,
+body.admin-layout .admin-category-list span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.admin-layout .admin-category-list span,
+body.admin-layout .admin-category-list em {
+    color: var(--muted);
+    font-size: 12px;
+    font-style: normal;
+}
+
+body.admin-layout .admin-category-list form {
+    margin: 0;
+}
+
+body.admin-layout .admin-search-stack strong {
+    margin-top: 4px;
+    font-size: 13px;
+}
+
+body.admin-layout .admin-search-stack a {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+body.admin-layout .contact-message {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border-top: 1px solid var(--line);
+}
+
+body.admin-layout .contact-message:first-of-type {
+    border-top: 0;
+}
+
+body.admin-layout .contact-message p,
+body.admin-layout .contact-message span {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+body.admin-layout .admin-login-screen {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    padding: 24px;
+}
+
+body.admin-layout .admin-login-card {
+    display: grid;
+    gap: 14px;
+    width: min(520px, 100%);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    padding: 30px;
+}
+
+body.admin-layout .admin-login-card h1 {
+    margin: 0;
+    font-size: 34px;
+}
+
+body.admin-layout .admin-login-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+@media (max-width: 860px) {
+    body.admin-layout .admin-console {
+        grid-template-columns: 1fr;
+    }
+
+    body.admin-layout .admin-sidebar {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+    }
+
+    body.admin-layout .admin-main {
+        padding: 0 18px 38px;
+    }
+
+    body.admin-layout .admin-topbar,
+    body.admin-layout .admin-hero {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    body.admin-layout .admin-topbar nav,
+    body.admin-layout .admin-hero-metrics {
+        justify-content: flex-start;
+    }
+
+    body.admin-layout .admin-dashboard-stats,
+    body.admin-layout .admin-dashboard-grid,
+    body.admin-layout .admin-split-grid,
+    body.admin-layout .admin-wide-editor,
+    body.admin-layout .admin-note-insight,
+    body.admin-layout .admin-field-grid,
+    body.admin-layout .admin-page-editors {
+        grid-template-columns: 1fr;
+    }
+
+    body.admin-layout .admin-data-card.wide {
+        grid-column: auto;
+    }
+
+    body.admin-layout .admin-visit-chart div,
+    body.admin-layout .admin-table-list a,
+    body.admin-layout .admin-manage-row,
+    body.admin-layout .admin-category-list > div,
+    body.admin-layout .admin-category-list a {
+        grid-template-columns: 1fr;
+    }
+}
