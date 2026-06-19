@@ -18,8 +18,9 @@ function site_base_url(): string
     $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['SERVER_PORT'] ?? '') === '443');
     $scheme = $https ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $dir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
-    return $scheme . '://' . $host . ($dir === '' ? '' : $dir);
+    $basePath = defined('BASE_PATH') ? trim((string) BASE_PATH) : '';
+    $basePath = $basePath === '/' ? '' : '/' . trim($basePath, '/');
+    return $scheme . '://' . $host . $basePath;
 }
 
 $repo = new NoteRepository();

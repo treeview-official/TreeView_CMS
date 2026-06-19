@@ -1,283 +1,115 @@
 # TreeView CMS
 
-> **Obsidian 스타일의 웹 기반 Knowledge Management System (KMS)**
+TreeView CMS는 PHP와 MySQL로 동작하는 웹 기반 지식 관리 CMS입니다. 문서를 데이터베이스에 저장하고, 카테고리, 태그, `[[문서 링크]]`, 백링크, 검색, 그래프 뷰로 문서 관계를 탐색할 수 있습니다.
 
-TreeView CMS는 **PHP + MySQL** 기반으로 제작된 웹 지식 관리 시스템입니다.
+## 주요 기능
 
-문서를 작성하고, 문서 간 연결(`[[링크]]`), 태그(`#태그`), 백링크, 그래프 뷰를 통해 지식을 체계적으로 관리할 수 있습니다.
+- 문서 작성, 수정, 삭제
+- 다중 카테고리 경로 관리
+- Markdown 문서와 제한된 HTML 문서 지원
+- `[[문서명]]` 내부 링크와 백링크
+- `#태그` 자동 추출
+- 카테고리, 태그, 본문 검색
+- 공개 대시보드와 관리자 대시보드
+- Contact 문의 저장
+- About, 이용방침, 개인정보처리방침 문구 관리
 
-개인 위키, 개발 문서, 회사 내부 위키, 기술 아카이브 등 다양한 용도로 활용할 수 있습니다.
+## 요구 환경
 
----
+- PHP 8.1 이상 권장
+- MySQL 5.7 이상 또는 MariaDB 10.x 이상
+- Apache `mod_rewrite` 권장
+- PHP 확장: PDO, pdo_mysql, mbstring, dom
 
-# ✨ 주요 기능
+## 파일 구조
 
-- 📝 웹에서 문서 작성 및 수정
-- 📂 카테고리 기반 문서 관리
-- 🔗 `[[문서명]]` 내부 링크 지원
-- 🏷️ `#태그` 자동 인식
-- ↔️ 백링크(Backlinks)
-- 🔍 실시간 문서 검색
-- 🌐 그래프(Graph View)
-- 📚 MySQL 기반 문서 저장
-- ⚡ 빠른 문서 탐색
-- 📱 반응형 UI 지원
-
----
-
-# 📸 주요 화면
-
-- 문서 목록
-- 문서 보기
-- 문서 편집
-- 카테고리 탐색
-- 태그 목록
-- 백링크
-- 그래프 뷰
-- 검색
-
----
-
-# 🚀 설치
-
-## 1. 프로젝트 업로드
-
-웹 서버에 TreeView CMS 파일을 업로드합니다.
-
-```
-/treeview
-    /admin
-    /assets
-    /install.php
-    /config.php
-    /index.php
+```text
+TreeView_CMS/
+  assets/
+    admin.css
+    app.js
+    style.css
+  lib/
+    Database.php
+    HtmlSanitizer.php
+    Markdown.php
+    NoteRepository.php
+    SettingsRepository.php
+    UserRepository.php
+  admin.php
+  config.php
+  config.example.php
+  index.php
+  install.php
+  schema.sql
+  category_tables.sql
+  sitemap.php
 ```
 
----
+## 설치
 
-## 2. 데이터베이스 설정
+1. 서버에 파일을 업로드합니다.
+2. `config.example.php`를 참고해 `config.php`의 DB 정보를 입력합니다.
+3. 하위 폴더에 설치한다면 `BASE_PATH`를 실제 경로로 맞춥니다. 예: `/`
+4. 브라우저에서 `/install.php`를 실행합니다.
+5. 관리자 이름, 이메일, 비밀번호, Contact 이메일을 입력하고 설치합니다.
+6. 설치 후 서버에서 `install.php` 접근을 차단하거나 파일명을 변경합니다.
 
-`config.php`에서 데이터베이스 정보를 입력합니다.
+`config.php` 예시:
 
 ```php
-$db_host = "localhost";
-$db_user = "root";
-$db_pass = "";
-$db_name = "treeview";
+const BASE_PATH = '/';
+const DB_HOST = 'localhost';
+const DB_NAME = 'DB_NAME';
+const DB_USER = 'DB_USER';
+const DB_PASS = 'DB_PASS';
+const DB_CHARSET = 'utf8mb4';
+const ADMIN_PASSWORD = 'long-random-secret';
 ```
 
----
+`ADMIN_PASSWORD`는 관리자 로그인 비밀번호가 아니라 방문자/문의 해시에 사용하는 내부 salt입니다. 관리자 계정 비밀번호는 설치 화면에서 생성되며 DB에는 해시로 저장됩니다.
 
-## 3. 설치
+## 문서 작성
 
-브라우저에서 아래 주소를 실행합니다.
+관리자 로그인 후 `admin.php`에서 문서를 등록합니다.
 
-```
-https://your-domain.com/install.php
-```
+카테고리는 `/`로 계층을 만듭니다. 한 문서에 여러 경로를 넣을 수 있으며 줄바꿈 또는 `|`로 구분합니다.
 
-데이터베이스 테이블이 자동으로 생성됩니다.
-
----
-
-## 4. 설치 완료
-
-설치가 완료되면 보안을 위해
-
-```
-install.php
+```text
+개발/프로그래밍언어/PHP
+개발/백엔드/PHP
+데이터베이스/DBMS/MySQL
 ```
 
-파일을 삭제하거나 이름을 변경하는 것을 권장합니다.
+Markdown 본문 예시:
 
+```markdown
+---
+title: PHP
+category_paths: 개발/프로그래밍언어/PHP | 개발/백엔드/PHP
+tags: [PHP, Backend]
 ---
 
-# ✍️ 문서 작성
+# PHP
 
-관리자 로그인 후 **`+`\*\*** 버튼\*\*을 눌러 새로운 문서를 작성할 수 있습니다.
+서버 사이드 웹 개발에 널리 쓰이는 스크립트 언어입니다.
 
-예시
+## 관련
 
-```txt
-카테고리: 개발/PHP
-
-TreeView CMS는 PHP와 MySQL 기반으로 제작된 웹 지식 관리 시스템입니다.
-
-관련 기술
-PHP
-MySQL
-JavaScript
-
-[[웹개발]]
-[[데이터베이스]]
-[[Markdown]]
-
-#PHP
-#CMS
-#KnowledgeBase
+- [[MySQL]]
+- [[WordPress]]
 ```
 
----
+## 배포 메모
 
-# 📂 카테고리
+- GitHub에는 `config.php`를 실제 비밀번호가 없는 템플릿 상태로 유지하는 것이 안전합니다.
+- 운영 서버의 실제 DB 정보는 서버에서만 수정하거나, 배포 자동화에서 별도 주입하는 방식을 권장합니다.
+- Apache가 아닌 Nginx를 쓰는 경우 `.htaccess`가 적용되지 않으므로 `config.php`, `*.sql`, `.git`, `README.md` 접근 차단을 서버 설정에 직접 추가해야 합니다.
+- `install.php`는 설치 후 제거하거나 접근 제한하세요.
 
-카테고리는 `/` 구분자를 이용하여 계층 구조를 만들 수 있습니다.
+## 추가 문서
 
-예시
-
-```
-개발/PHP
-개발/Python
-개발/JavaScript
-
-인프라/Docker
-인프라/Nginx
-
-AI/LLM
-AI/Prompt
-
-정치/정당
-정치/인물
-```
-
-카테고리별 문서 목록을 제공하며, 상위 카테고리에서 하위 문서를 함께 탐색할 수 있습니다.
-
----
-
-# 🔗 내부 링크
-
-문서 내에서
-
-```txt
-[[PHP]]
-[[MySQL]]
-[[Docker]]
-```
-
-처럼 작성하면 자동으로 내부 링크가 생성됩니다.
-
-존재하지 않는 문서는 새 문서 생성 대상으로 표시할 수 있습니다.
-
----
-
-# 🏷️ 태그
-
-문서 내에서
-
-```txt
-#PHP
-#Backend
-#Database
-```
-
-처럼 작성하면 태그가 자동 등록됩니다.
-
-태그 페이지에서 동일한 태그를 사용하는 문서를 모아볼 수 있습니다.
-
----
-
-# ↔️ 백링크
-
-다른 문서에서 현재 문서를 참조하면 자동으로 백링크가 생성됩니다.
-
-예시
-
-```
-PHP ← Laravel
-PHP ← WordPress
-PHP ← TreeView CMS
-```
-
-문서 간 관계를 쉽게 파악할 수 있습니다.
-
----
-
-# 🌐 그래프 뷰
-
-모든 문서는 노드(Node) 형태로 연결되어 시각화됩니다.
-
-```
-PHP
- ├── Laravel
- ├── WordPress
- └── TreeView CMS
-
-MySQL
- ├── MariaDB
- └── Database
-```
-
-문서 간 연결 관계를 직관적으로 탐색할 수 있습니다.
-
----
-
-# 🔍 검색
-
-- 제목 검색
-- 내용 검색
-- 태그 검색
-- 카테고리 검색
-
-빠르게 원하는 문서를 찾을 수 있습니다.
-
----
-
-# 💡 활용 사례
-
-- 개발 위키
-- 회사 내부 문서
-- API 문서
-- 기술 블로그
-- PKM(Personal Knowledge Management)
-- Obsidian 대체 웹 서비스
-- 프로젝트 문서
-- 학습 노트
-- 연구 자료 관리
-
----
-
-# 🛠️ 기술 스택
-
-- PHP
-- MySQL
-- HTML5
-- CSS3
-- JavaScript
-- AJAX
-- SVG
-- Markdown Parser
-
----
-
-# 📦 요구 사항
-
-- PHP 8.1 이상
-- MySQL 5.7 이상 또는 MariaDB 10.x 이상
-- Apache 또는 Nginx
-- mod_rewrite(선택)
-
----
-
-# 📌 로드맵
-
-- [x] 문서 작성
-- [x] 내부 링크
-- [x] 태그
-- [x] 백링크
-- [x] 검색
-- [x] 그래프 뷰
-- [ ] Markdown 확장
-- [ ] 파일 첨부
-- [ ] 버전 관리
-- [ ] 협업 기능
-- [ ] REST API
-- [ ] 플러그인 시스템
-- [x] 다국어 지원
-
----
-
-# ❤️ TreeView CMS
-
-**TreeView CMS**는 문서를 저장하는 것을 넘어, **문서 간 연결과 관계를 시각화하여 지식을 성장시키는 웹 기반 Knowledge Management System**입니다.
-
-복잡한 정보를 하나의 트리(Tree)처럼 연결하고 탐색할 수 있도록 설계되었습니다.
+- [설치 가이드](docs/INSTALL.md)
+- [설정 가이드](docs/SETTINGS.md)
+- [배포 체크리스트](docs/DEPLOYMENT.md)
+- [패치노트](CHANGELOG.md)

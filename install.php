@@ -16,6 +16,23 @@ $message = null;
 $error = null;
 $needsAdmin = true;
 
+function run_sql_file(PDO $pdo, string $file): void
+{
+    $path = __DIR__ . '/' . $file;
+    if (!is_file($path)) {
+        throw new RuntimeException($file . ' 파일을 찾을 수 없습니다.');
+    }
+
+    $sql = file_get_contents($path);
+    if ($sql === false) {
+        throw new RuntimeException($file . ' 파일을 읽을 수 없습니다.');
+    }
+
+    foreach (array_filter(array_map('trim', explode(';', $sql))) as $statement) {
+        $pdo->exec($statement);
+    }
+}
+
 try {
     $pdo = Database::pdo();
     $pdo->query('SELECT 1 FROM users LIMIT 1');
@@ -27,13 +44,8 @@ try {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $pdo = Database::pdo();
-        $schema = file_get_contents(__DIR__ . '/schema.sql');
-        if ($schema === false) {
-            throw new RuntimeException('schema.sql 파일을 읽을 수 없습니다.');
-        }
-        foreach (array_filter(array_map('trim', explode(';', $schema))) as $statement) {
-            $pdo->exec($statement);
-        }
+        run_sql_file($pdo, 'schema.sql');
+        run_sql_file($pdo, 'category_tables.sql');
 
         $count = (int) $pdo->query('SELECT COUNT(*) FROM notes')->fetchColumn();
         if ($count === 0) {

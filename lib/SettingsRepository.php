@@ -88,6 +88,17 @@ final class SettingsRepository
             throw new RuntimeException('문의 내용을 입력해주세요.');
         }
 
+        $ipHash = hash('sha256', (string) ($_SERVER['REMOTE_ADDR'] ?? '') . '|' . (string) ($_SERVER['HTTP_USER_AGENT'] ?? '') . '|' . ADMIN_PASSWORD);
+        $rateStmt = Database::pdo()->prepare('
+            SELECT COUNT(*)
+            FROM contact_messages
+            WHERE ip_hash = :ip_hash AND created_at >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)
+        ');
+        $rateStmt->execute(['ip_hash' => $ipHash]);
+        if ((int) $rateStmt->fetchColumn() >= 3) {
+            throw new RuntimeException('문의가 너무 자주 접수되었습니다. 잠시 후 다시 시도해주세요.');
+        }
+
         $stmt = Database::pdo()->prepare('
             INSERT INTO contact_messages (name, email, subject, message, ip_hash, created_at)
             VALUES (:name, :email, :subject, :message, :ip_hash, NOW())
@@ -97,7 +108,7 @@ final class SettingsRepository
             'email' => $email,
             'subject' => $subject,
             'message' => $message,
-            'ip_hash' => hash('sha256', (string) ($_SERVER['REMOTE_ADDR'] ?? '') . '|' . (string) ($_SERVER['HTTP_USER_AGENT'] ?? '')),
+            'ip_hash' => $ipHash,
         ]);
     }
 

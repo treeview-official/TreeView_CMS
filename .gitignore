@@ -1,0 +1,11 @@
+*.log
+*.zip
+*.tar
+*.tar.gz
+
+/config.local.php
+/backup/
+/tmp/
+
+.DS_Store
+Thumbs.db

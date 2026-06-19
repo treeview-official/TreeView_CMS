@@ -55,8 +55,9 @@ function base_url(): string
     $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['SERVER_PORT'] ?? '') === '443');
     $scheme = $https ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $dir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
-    return $scheme . '://' . $host . ($dir === '' ? '' : $dir);
+    $basePath = defined('BASE_PATH') ? trim((string) BASE_PATH) : '';
+    $basePath = $basePath === '/' ? '' : '/' . trim($basePath, '/');
+    return $scheme . '://' . $host . $basePath;
 }
 
 function note_url(string $slug): string
@@ -287,6 +288,7 @@ $users = null;
 $currentUser = null;
 $error = null;
 $message = null;
+$allowRegistration = false;
 
 try {
     Database::pdo()->query('SELECT 1 FROM notes LIMIT 1');
@@ -302,6 +304,7 @@ try {
             $_SESSION['user_name'] = $currentUser['display_name'];
         }
     }
+    $allowRegistration = $users->countUsers() === 0;
 } catch (Throwable $e) {
     header('Location: install.php');
     exit;
@@ -333,6 +336,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
         if ($action === 'register') {
+            if (!$users || $users->countUsers() > 0) {
+                throw new RuntimeException('회원가입은 첫 관리자 계정 생성 시에만 사용할 수 있습니다.');
+            }
             $user = $users->register((string) ($_POST['email'] ?? ''), (string) ($_POST['display_name'] ?? ''), (string) ($_POST['password'] ?? ''));
             session_regenerate_id(true);
             $_SESSION['user_id'] = (int) $user['id'];
@@ -898,7 +904,7 @@ if ($isPolicyPage) {
                         <strong>관리자 계정 안내</strong>
                         <span>첫 번째로 가입한 계정이 관리자입니다. 비밀번호는 암호화되어 저장되므로 화면에 표시할 수 없습니다.</span>
                     </div>
-                    <div class="account-grid">
+                    <div class="account-grid <?= $allowRegistration ? '' : 'single' ?>">
                         <form method="post" class="account-form">
                             <input type="hidden" name="action" value="login">
                             <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
@@ -907,6 +913,7 @@ if ($isPolicyPage) {
                             <label><span>비밀번호</span><input type="password" name="password" autocomplete="current-password" required></label>
                             <button class="button primary" type="submit">로그인</button>
                         </form>
+                        <?php if ($allowRegistration): ?>
                         <form method="post" class="account-form">
                             <input type="hidden" name="action" value="register">
                             <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
@@ -917,6 +924,12 @@ if ($isPolicyPage) {
                             <p class="account-note">첫 번째 가입 계정은 관리자 계정이 됩니다.</p>
                             <button class="button primary" type="submit">계정 만들기</button>
                         </form>
+                        <?php else: ?>
+                        <div class="account-form account-note-box">
+                            <h3>계정 생성 제한</h3>
+                            <p>관리자 계정은 설치 과정에서 생성합니다. 추가 계정이 필요하면 데이터베이스에서 역할을 직접 관리하거나 계정 관리 기능을 별도로 확장하세요.</p>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
             </div>
