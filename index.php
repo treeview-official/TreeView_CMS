@@ -79,6 +79,21 @@ function url_with(array $changes): string
     return 'index.php' . ($query !== '' ? '?' . $query : '');
 }
 
+function wants_json(): bool
+{
+    $accept = (string) ($_SERVER['HTTP_ACCEPT'] ?? '');
+    $requestedWith = (string) ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '');
+    return stripos($accept, 'application/json') !== false || strtolower($requestedWith) === 'fetch';
+}
+
+function json_response(array $payload, int $status = 200)
+{
+    http_response_code($status);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 function description_from(array $note = null): string
 {
     if (!$note) {
@@ -340,7 +355,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($noteId <= 0) {
                 throw new RuntimeException('좋아요를 처리할 문서를 찾을 수 없습니다.');
             }
-            $repo->addLike($noteId, like_visitor_hash());
+            $visitorHash = like_visitor_hash();
+            $count = $repo->addLike($noteId, $visitorHash);
+            $liked = $repo->hasLiked($noteId, $visitorHash);
+            if (wants_json()) {
+                json_response([
+                    'ok' => true,
+                    'count' => $count,
+                    'liked' => $liked,
+                ]);
+            }
             header('Location: index.php?note=' . rawurlencode($slug) . '#note-actions');
             exit;
         }
@@ -395,6 +419,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
     } catch (Throwable $e) {
+        if (wants_json()) {
+            json_response(['ok' => false, 'message' => $e->getMessage()], 400);
+        }
         $error = $e->getMessage();
     }
 }
@@ -884,19 +911,21 @@ if ($isPolicyPage) {
                 <article class="note">
                     <h1><?= h($current['title']) ?></h1>
                     <?php if ($currentTags !== []): ?><div class="meta"><?php foreach ($currentTags as $name): ?><a class="tag" href="?tag=<?= rawurlencode($name) ?>">#<?= h($name) ?></a><?php endforeach; ?></div><?php endif; ?>
-                    <div class="note-actions" id="note-actions">
-                        <form method="post" class="like-form">
+                    <div class="note-actions" id="note-actions" aria-label="문서 반응">
+                        <form method="post" class="like-form" data-like-form>
                             <input type="hidden" name="action" value="like_note">
                             <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
                             <input type="hidden" name="note_id" value="<?= (int) $current['id'] ?>">
                             <input type="hidden" name="slug" value="<?= h((string) $current['slug']) ?>">
-                            <button class="note-action-button like-button <?= $currentHasLiked ? 'active' : '' ?>" type="submit" <?= $currentHasLiked ? 'disabled' : '' ?>>
-                                <span>좋아요</span>
-                                <strong><?= number_format($currentLikeCount) ?></strong>
+                            <button class="note-action-button like-button <?= $currentHasLiked ? 'active' : '' ?>" type="submit" <?= $currentHasLiked ? 'disabled' : '' ?> aria-pressed="<?= $currentHasLiked ? 'true' : 'false' ?>">
+                                <span class="note-action-icon">♥</span>
+                                <span class="note-action-text"><?= $currentHasLiked ? '좋아요 완료' : '좋아요' ?></span>
+                                <strong data-like-count><?= number_format($currentLikeCount) ?></strong>
                             </button>
                         </form>
                         <button class="note-action-button share-button" type="button" data-share-url="<?= h($canonical) ?>" data-share-title="<?= h((string) $current['title']) ?>">
-                            <span>공유</span>
+                            <span class="note-action-icon">↗</span>
+                            <span class="note-action-text">공유하기</span>
                         </button>
                     </div>
                     <?php if (($current['content_type'] ?? 'markdown') === 'html'): ?>

@@ -900,8 +900,11 @@ body {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
-    margin: -16px 0 30px;
+    gap: 10px;
+    margin: -16px 0 32px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 0;
 }
 
 .like-form {
@@ -912,37 +915,72 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    min-height: var(--control-height);
+    gap: 9px;
+    min-height: 44px;
     border: 1px solid var(--line);
     border-radius: 8px;
-    background: var(--panel);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--panel-soft) 86%, transparent), var(--panel));
     color: var(--ink);
-    padding: 8px 12px;
+    box-shadow: 0 10px 22px rgba(54, 42, 29, 0.055);
+    padding: 8px 13px;
     cursor: pointer;
     font-weight: 800;
+    transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+}
+
+.note-action-button:hover {
+    transform: translateY(-1px);
+}
+
+.note-action-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--line) 56%, transparent);
+    color: var(--accent-dark);
+    font-size: 14px;
+    line-height: 1;
+}
+
+.note-action-text {
+    line-height: 1;
 }
 
 .note-action-button strong {
-    min-width: 24px;
+    min-width: 28px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    background: color-mix(in srgb, var(--accent) 13%, var(--panel));
     color: var(--accent-dark);
-    padding: 3px 7px;
+    padding: 4px 8px;
     font-size: 12px;
     line-height: 1.2;
+    text-align: center;
 }
 
 .note-action-button:hover,
 .note-action-button.active,
 .note-action-button.copied {
     border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 10%, var(--panel));
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--accent) 13%, var(--panel)), var(--panel));
+}
+
+.note-action-button.active .note-action-icon,
+.note-action-button.copied .note-action-icon {
+    background: var(--accent);
+    color: #fff;
 }
 
 .note-action-button:disabled {
     cursor: default;
     opacity: 0.82;
+}
+
+.note-action-button.loading {
+    pointer-events: none;
 }
 
 .markdown {

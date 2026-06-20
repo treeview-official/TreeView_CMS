@@ -6,6 +6,7 @@
     initAccount();
     initTranslation();
     initCodeCopy();
+    initLikeForms();
     initShareButtons();
     initGraphPanel();
     initResponsiveShell();
@@ -156,6 +157,61 @@
         }
     }
 
+    function initLikeForms() {
+        document.querySelectorAll('[data-like-form]').forEach((form) => {
+            const button = form.querySelector('.like-button');
+            const count = form.querySelector('[data-like-count]');
+            const label = form.querySelector('.note-action-text');
+
+            if (!button) return;
+
+            form.addEventListener('submit', async (event) => {
+                if (!window.fetch || button.disabled) return;
+                event.preventDefault();
+
+                button.disabled = true;
+                button.classList.add('loading');
+
+                try {
+                    const response = await fetch(form.getAttribute('action') || window.location.href, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'fetch'
+                        },
+                        credentials: 'same-origin'
+                    });
+                    const payload = await response.json();
+                    if (!response.ok || !payload.ok) {
+                        throw new Error(payload.message || '좋아요를 저장하지 못했습니다.');
+                    }
+
+                    if (count) {
+                        count.textContent = Number(payload.count || 0).toLocaleString();
+                    }
+                    if (label) {
+                        label.textContent = '좋아요 완료';
+                    }
+                    button.classList.add('active');
+                    button.setAttribute('aria-pressed', 'true');
+                    button.disabled = true;
+                } catch (error) {
+                    button.disabled = false;
+                    if (label) {
+                        const original = label.textContent;
+                        label.textContent = '다시 시도';
+                        window.setTimeout(() => {
+                            label.textContent = original || '좋아요';
+                        }, 1400);
+                    }
+                } finally {
+                    button.classList.remove('loading');
+                }
+            });
+        });
+    }
+
     function initShareButtons() {
         document.querySelectorAll('[data-share-url]').forEach((button) => {
             button.addEventListener('click', async () => {
@@ -172,7 +228,7 @@
                 }
 
                 const ok = await copyText(url);
-                const label = button.querySelector('span') || button;
+                const label = button.querySelector('.note-action-text') || button.querySelector('span') || button;
                 const original = label.textContent;
                 label.textContent = ok ? '복사됨' : '실패';
                 button.classList.toggle('copied', ok);
