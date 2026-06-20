@@ -69,6 +69,16 @@ CREATE TABLE IF NOT EXISTS note_visits (
     CONSTRAINT fk_note_visits_note FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS note_likes (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    note_id INT UNSIGNED NOT NULL,
+    visitor_hash CHAR(64) NOT NULL,
+    created_at DATETIME NOT NULL,
+    UNIQUE KEY uniq_note_likes_visitor (note_id, visitor_hash),
+    INDEX idx_note_likes_note_id (note_id),
+    CONSTRAINT fk_note_likes_note FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS users (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(190) NOT NULL UNIQUE,

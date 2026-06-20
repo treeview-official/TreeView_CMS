@@ -275,6 +275,7 @@ if ($editNote || $postedAction === 'delete_note' || ($postedAction === 'save_not
                         <div><span>오늘 페이지뷰</span><strong><?= number_format((int) $dashboard['summary']['today_pageviews']) ?></strong><em>방문 로그</em></div>
                         <div><span>태그</span><strong><?= number_format((int) $dashboard['summary']['tags']) ?></strong><em>분류 키워드</em></div>
                         <div><span>문서 링크</span><strong><?= number_format((int) $dashboard['summary']['links']) ?></strong><em>연결 관계</em></div>
+                        <div><span>좋아요</span><strong><?= number_format((int) $dashboard['summary']['likes']) ?></strong><em>문서 반응</em></div>
                     </div>
 
                     <div class="admin-dashboard-grid">

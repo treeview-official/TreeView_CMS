@@ -269,6 +269,14 @@ function daily_visitor_hash(): string
     return hash('sha256', date('Y-m-d') . '|' . $ip . '|' . $agent . '|' . ADMIN_PASSWORD);
 }
 
+function like_visitor_hash(): string
+{
+    $forwarded = (string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? '');
+    $ip = trim(explode(',', $forwarded)[0] ?: (string) ($_SERVER['REMOTE_ADDR'] ?? ''));
+    $agent = (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
+    return hash('sha256', $ip . '|' . $agent . '|' . ADMIN_PASSWORD);
+}
+
 function render_setting_text(string $value): string
 {
     $paragraphs = preg_split('/\R{2,}/u', trim($value)) ?: [];
@@ -325,6 +333,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 (string) ($_POST['message'] ?? '')
             );
             $message = '문의가 접수되었습니다.';
+        }
+        if ($action === 'like_note') {
+            $noteId = (int) ($_POST['note_id'] ?? 0);
+            $slug = (string) ($_POST['slug'] ?? '');
+            if ($noteId <= 0) {
+                throw new RuntimeException('좋아요를 처리할 문서를 찾을 수 없습니다.');
+            }
+            $repo->addLike($noteId, like_visitor_hash());
+            header('Location: index.php?note=' . rawurlencode($slug) . '#note-actions');
+            exit;
         }
         if ($action === 'login') {
             $user = $users->login((string) ($_POST['email'] ?? ''), (string) ($_POST['password'] ?? ''));
@@ -423,6 +441,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && !is_admin() && !$isDashboard && $mod
 }
 $backlinks = $current ? $repo->backlinks($current['slug']) : [];
 $currentTags = $current ? Markdown::tags((string) $current['body']) : [];
+$currentLikeCount = $current ? $repo->likeCount((int) $current['id']) : 0;
+$currentHasLiked = $current ? $repo->hasLiked((int) $current['id'], like_visitor_hash()) : false;
 $currentCategoryPath = $current ? ($repo->noteCategoryPath((int) $current['id']) ?: note_category_path($current)) : $categoryFilter;
 $categoryNotes = $repo->categoryChildren(null, 500);
 $skillCategoryPrefix = $currentCategoryPath !== '' ? $currentCategoryPath : (string) ($categoryNotes[0]['path'] ?? '');
@@ -689,6 +709,7 @@ if ($isPolicyPage) {
                         <div class="stat-card green"><span>오늘 페이지뷰</span><strong><?= number_format((int) $dashboard['summary']['today_pageviews']) ?></strong></div>
                         <div class="stat-card"><span>태그</span><strong><?= number_format((int) $dashboard['summary']['tags']) ?></strong></div>
                         <div class="stat-card"><span>링크</span><strong><?= number_format((int) $dashboard['summary']['links']) ?></strong></div>
+                        <div class="stat-card"><span>좋아요</span><strong><?= number_format((int) $dashboard['summary']['likes']) ?></strong></div>
                         <div class="stat-card"><span>최고 조회수</span><strong><?= number_format((int) $dashboard['summary']['max_views']) ?></strong></div>
                         <div class="stat-card"><span>평균 조회수</span><strong><?= h((string) $dashboard['summary']['avg_views']) ?></strong></div>
                     </div>
@@ -863,6 +884,21 @@ if ($isPolicyPage) {
                 <article class="note">
                     <h1><?= h($current['title']) ?></h1>
                     <?php if ($currentTags !== []): ?><div class="meta"><?php foreach ($currentTags as $name): ?><a class="tag" href="?tag=<?= rawurlencode($name) ?>">#<?= h($name) ?></a><?php endforeach; ?></div><?php endif; ?>
+                    <div class="note-actions" id="note-actions">
+                        <form method="post" class="like-form">
+                            <input type="hidden" name="action" value="like_note">
+                            <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                            <input type="hidden" name="note_id" value="<?= (int) $current['id'] ?>">
+                            <input type="hidden" name="slug" value="<?= h((string) $current['slug']) ?>">
+                            <button class="note-action-button like-button <?= $currentHasLiked ? 'active' : '' ?>" type="submit" <?= $currentHasLiked ? 'disabled' : '' ?>>
+                                <span>좋아요</span>
+                                <strong><?= number_format($currentLikeCount) ?></strong>
+                            </button>
+                        </form>
+                        <button class="note-action-button share-button" type="button" data-share-url="<?= h($canonical) ?>" data-share-title="<?= h((string) $current['title']) ?>">
+                            <span>공유</span>
+                        </button>
+                    </div>
                     <?php if (($current['content_type'] ?? 'markdown') === 'html'): ?>
                         <div class="markdown html-document"><?= HtmlSanitizer::clean((string) $current['body']) ?></div>
                     <?php else: ?>

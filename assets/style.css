@@ -896,6 +896,55 @@ body {
     margin-bottom: 34px;
 }
 
+.note-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: -16px 0 30px;
+}
+
+.like-form {
+    margin: 0;
+}
+
+.note-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: var(--control-height);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--ink);
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.note-action-button strong {
+    min-width: 24px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent-dark);
+    padding: 3px 7px;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.note-action-button:hover,
+.note-action-button.active,
+.note-action-button.copied {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, var(--panel));
+}
+
+.note-action-button:disabled {
+    cursor: default;
+    opacity: 0.82;
+}
+
 .markdown {
     font-size: 17px;
     line-height: 1.75;

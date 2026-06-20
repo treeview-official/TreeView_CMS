@@ -6,6 +6,7 @@
     initAccount();
     initTranslation();
     initCodeCopy();
+    initShareButtons();
     initGraphPanel();
     initResponsiveShell();
 
@@ -153,6 +154,34 @@
         } finally {
             textarea.remove();
         }
+    }
+
+    function initShareButtons() {
+        document.querySelectorAll('[data-share-url]').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const url = button.getAttribute('data-share-url') || window.location.href;
+                const title = button.getAttribute('data-share-title') || document.title;
+
+                if (navigator.share) {
+                    try {
+                        await navigator.share({ title, url });
+                        return;
+                    } catch (error) {
+                        if (error && error.name === 'AbortError') return;
+                    }
+                }
+
+                const ok = await copyText(url);
+                const label = button.querySelector('span') || button;
+                const original = label.textContent;
+                label.textContent = ok ? '복사됨' : '실패';
+                button.classList.toggle('copied', ok);
+                window.setTimeout(() => {
+                    label.textContent = original || '공유';
+                    button.classList.remove('copied');
+                }, 1400);
+            });
+        });
     }
 
     function initGraphPanel() {
