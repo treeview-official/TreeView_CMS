@@ -179,38 +179,53 @@ final class NoteRepository
 
     public function addLike(int $noteId, string $visitorHash): int
     {
-        $stmt = Database::pdo()->prepare('
-            INSERT IGNORE INTO note_likes (note_id, visitor_hash, created_at)
-            VALUES (:note_id, :visitor_hash, NOW())
-        ');
-        $stmt->execute([
-            'note_id' => $noteId,
-            'visitor_hash' => $visitorHash,
-        ]);
+        try {
+            $this->ensureLikesSchema();
+            $stmt = Database::pdo()->prepare('
+                INSERT IGNORE INTO note_likes (note_id, visitor_hash, created_at)
+                VALUES (:note_id, :visitor_hash, NOW())
+            ');
+            $stmt->execute([
+                'note_id' => $noteId,
+                'visitor_hash' => $visitorHash,
+            ]);
+        } catch (Throwable $e) {
+            return 0;
+        }
 
         return $this->likeCount($noteId);
     }
 
     public function likeCount(int $noteId): int
     {
-        $stmt = Database::pdo()->prepare('SELECT COUNT(*) FROM note_likes WHERE note_id = :note_id');
-        $stmt->execute(['note_id' => $noteId]);
-        return (int) $stmt->fetchColumn();
+        try {
+            $this->ensureLikesSchema();
+            $stmt = Database::pdo()->prepare('SELECT COUNT(*) FROM note_likes WHERE note_id = :note_id');
+            $stmt->execute(['note_id' => $noteId]);
+            return (int) $stmt->fetchColumn();
+        } catch (Throwable $e) {
+            return 0;
+        }
     }
 
     public function hasLiked(int $noteId, string $visitorHash): bool
     {
-        $stmt = Database::pdo()->prepare('
-            SELECT 1
-            FROM note_likes
-            WHERE note_id = :note_id AND visitor_hash = :visitor_hash
-            LIMIT 1
-        ');
-        $stmt->execute([
-            'note_id' => $noteId,
-            'visitor_hash' => $visitorHash,
-        ]);
-        return (bool) $stmt->fetchColumn();
+        try {
+            $this->ensureLikesSchema();
+            $stmt = Database::pdo()->prepare('
+                SELECT 1
+                FROM note_likes
+                WHERE note_id = :note_id AND visitor_hash = :visitor_hash
+                LIMIT 1
+            ');
+            $stmt->execute([
+                'note_id' => $noteId,
+                'visitor_hash' => $visitorHash,
+            ]);
+            return (bool) $stmt->fetchColumn();
+        } catch (Throwable $e) {
+            return false;
+        }
     }
 
     public function save($id, string $title, string $body, array $categoryPaths = null, string $contentType = 'markdown'): array
@@ -616,7 +631,12 @@ final class NoteRepository
 
         $tagCount = (int) $pdo->query('SELECT COUNT(DISTINCT name) FROM note_tags')->fetchColumn();
         $linkCount = (int) $pdo->query('SELECT COUNT(*) FROM note_links')->fetchColumn();
-        $likeCount = (int) $pdo->query('SELECT COUNT(*) FROM note_likes')->fetchColumn();
+        try {
+            $this->ensureLikesSchema();
+            $likeCount = (int) $pdo->query('SELECT COUNT(*) FROM note_likes')->fetchColumn();
+        } catch (Throwable $e) {
+            $likeCount = 0;
+        }
 
         $topViewed = $pdo->query('
             SELECT title, slug, excerpt, views, updated_at
@@ -765,17 +785,7 @@ final class NoteRepository
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ');
 
-        $pdo->exec('
-            CREATE TABLE IF NOT EXISTS note_likes (
-                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                note_id INT UNSIGNED NOT NULL,
-                visitor_hash CHAR(64) NOT NULL,
-                created_at DATETIME NOT NULL,
-                UNIQUE KEY uniq_note_likes_visitor (note_id, visitor_hash),
-                INDEX idx_note_likes_note_id (note_id),
-                CONSTRAINT fk_note_likes_note FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-        ');
+        $this->ensureLikesSchema();
 
         $pdo->exec('
             CREATE TABLE IF NOT EXISTS categories (
@@ -820,6 +830,20 @@ final class NoteRepository
         ');
 
         self::$schemaReady = true;
+    }
+
+    private function ensureLikesSchema()
+    {
+        Database::pdo()->exec('
+            CREATE TABLE IF NOT EXISTS note_likes (
+                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                note_id INT UNSIGNED NOT NULL,
+                visitor_hash CHAR(64) NOT NULL,
+                created_at DATETIME NOT NULL,
+                UNIQUE KEY uniq_note_likes_visitor (note_id, visitor_hash),
+                INDEX idx_note_likes_note_id (note_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ');
     }
 
     private function refreshRelations(int $id, string $body)

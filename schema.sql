@@ -75,8 +75,7 @@ CREATE TABLE IF NOT EXISTS note_likes (
     visitor_hash CHAR(64) NOT NULL,
     created_at DATETIME NOT NULL,
     UNIQUE KEY uniq_note_likes_visitor (note_id, visitor_hash),
-    INDEX idx_note_likes_note_id (note_id),
-    CONSTRAINT fk_note_likes_note FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
+    INDEX idx_note_likes_note_id (note_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS users (
