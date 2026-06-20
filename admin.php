@@ -235,7 +235,7 @@ if ($editNote || $postedAction === 'delete_note' || ($postedAction === 'save_not
         })();
     </script>
     <link rel="stylesheet" href="assets/style.css?v=treeview-20260619">
-    <link rel="stylesheet" href="assets/admin.css?v=treeview-20260619">
+    <link rel="stylesheet" href="assets/admin.css?v=treeview-20260620">
 </head>
 <body class="admin-layout">
 <?php if (!$isAdmin): ?>

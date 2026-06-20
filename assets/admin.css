@@ -285,6 +285,7 @@ body.admin-layout .admin-data-card.wide {
 body.admin-layout .admin-card-head,
 body.admin-layout .admin-section-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
@@ -367,7 +368,12 @@ body.admin-layout select {
     border-radius: 8px;
     background: var(--panel);
     color: var(--ink);
+    min-width: 0;
     padding: 11px 12px;
+}
+
+body.admin-layout input[type="file"] {
+    line-height: 1.35;
 }
 
 body.admin-layout textarea {
@@ -471,6 +477,8 @@ body.admin-layout .admin-favicon-preview {
     display: flex;
     align-items: center;
     gap: 10px;
+    grid-column: 1 / -1;
+    min-width: 0;
     border: 1px solid var(--line);
     border-radius: 8px;
     background: color-mix(in srgb, var(--panel) 72%, var(--bg) 28%);
@@ -480,7 +488,13 @@ body.admin-layout .admin-favicon-preview {
     padding: 10px 12px;
 }
 
+body.admin-layout .admin-favicon-preview span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
 body.admin-layout .admin-favicon-preview img {
+    flex: 0 0 auto;
     width: 32px;
     height: 32px;
     border-radius: 6px;
@@ -489,7 +503,7 @@ body.admin-layout .admin-favicon-preview img {
 
 body.admin-layout .admin-media-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 14px;
     padding: 18px;
 }
@@ -513,6 +527,14 @@ body.admin-layout .admin-media-card img {
     object-fit: cover;
 }
 
+body.admin-layout .admin-media-card label {
+    min-width: 0;
+}
+
+body.admin-layout .admin-media-card input {
+    font-size: 12px;
+}
+
 body.admin-layout .admin-media-card strong,
 body.admin-layout .admin-media-card span {
     display: block;
@@ -527,6 +549,10 @@ body.admin-layout .admin-media-card span {
 body.admin-layout .admin-media-card form {
     display: flex;
     justify-content: flex-end;
+}
+
+body.admin-layout .admin-media-card form .button {
+    min-width: 74px;
 }
 
 body.admin-layout .admin-card-head.compact {
