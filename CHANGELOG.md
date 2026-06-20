@@ -10,6 +10,7 @@ TreeView CMS의 버전별 변경사항을 기록합니다.
 - `?type`, `void`, typed property, arrow function, `private const` 문법을 PHP 7.0 호환 형태로 변경
 - PHP 파일의 UTF-8 BOM을 제거해 `declare(strict_types=1)` 파싱 오류 방지
 - Apache 2.2 서버에서 `.htaccess`의 `Require all denied` 문법 때문에 500 오류가 발생할 수 있던 문제 수정
+- `config.php`에서 불필요한 `declare(strict_types=1)`를 제거해 BOM이 붙은 업로드 환경에서도 fatal error가 나지 않도록 수정
 
 ## v0.2.0 - 2026-06-20
 
