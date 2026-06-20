@@ -15,6 +15,7 @@ require __DIR__ . '/lib/HtmlSanitizer.php';
 require __DIR__ . '/lib/NoteRepository.php';
 require __DIR__ . '/lib/UserRepository.php';
 require __DIR__ . '/lib/SettingsRepository.php';
+require __DIR__ . '/lib/ImageRepository.php';
 
 header('Content-Type: text/html; charset=utf-8');
 date_default_timezone_set(APP_TIMEZONE);
@@ -81,11 +82,23 @@ function admin_apply_category_paths(string $body, string $title, array $category
     return "---\n" . trim($front) . "\n---\n\n" . ltrim((string) $rest);
 }
 
+function admin_file_size(int $bytes): string
+{
+    if ($bytes >= 1048576) {
+        return number_format($bytes / 1048576, 1) . ' MB';
+    }
+    if ($bytes >= 1024) {
+        return number_format($bytes / 1024, 1) . ' KB';
+    }
+    return number_format($bytes) . ' B';
+}
+
 $users = new UserRepository();
 $currentUser = isset($_SESSION['user_id']) ? $users->findById((int) $_SESSION['user_id']) : null;
 $isAdmin = $currentUser && $currentUser['role'] === 'admin';
 $settingsRepo = new SettingsRepository();
 $noteRepo = $isAdmin ? new NoteRepository() : null;
+$imageRepo = $isAdmin ? new ImageRepository() : null;
 $message = null;
 $error = null;
 $postedAction = '';
@@ -99,8 +112,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isAdmin) {
         $postedTab = (string) ($_POST['return_tab'] ?? '');
 
         if ($action === 'settings') {
-            $settingsRepo->update($_POST);
+            $values = $_POST;
+            if (!empty($_FILES['favicon']) && (int) ($_FILES['favicon']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+                if (!$imageRepo) {
+                    throw new RuntimeException('이미지 저장소를 불러오지 못했습니다.');
+                }
+                $favicon = $imageRepo->storeUploaded($_FILES['favicon'], 'favicon');
+                $values['favicon_path'] = (string) ($favicon['file_url'] ?? '');
+            }
+            $settingsRepo->update($values);
             $message = '사이트 설정을 저장했습니다.';
+        } elseif ($action === 'upload_image') {
+            if (!$imageRepo) {
+                throw new RuntimeException('이미지 저장소를 불러오지 못했습니다.');
+            }
+            $imageRepo->storeUploaded($_FILES['image_file'] ?? [], (string) ($_POST['alt_text'] ?? ''));
+            $message = '이미지를 WebP로 저장했습니다.';
+        } elseif ($action === 'delete_image') {
+            if (!$imageRepo) {
+                throw new RuntimeException('이미지 저장소를 불러오지 못했습니다.');
+            }
+            $imageRepo->delete((int) ($_POST['id'] ?? 0));
+            $message = '이미지를 삭제했습니다.';
         } elseif ($action === 'save_note') {
             if (!$noteRepo) {
                 throw new RuntimeException('문서 저장소를 불러오지 못했습니다.');
@@ -152,7 +185,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isAdmin) {
 }
 
 $settings = $settingsRepo->all();
+$siteName = trim((string) ($settings['site_name'] ?? APP_NAME));
+$siteName = $siteName !== '' ? $siteName : APP_NAME;
+$faviconPath = trim((string) ($settings['favicon_path'] ?? ''));
 $contactMessages = $isAdmin ? $settingsRepo->contactMessages(30) : [];
+$mediaAssets = $imageRepo ? $imageRepo->all(80) : [];
 $dashboard = $noteRepo ? $noteRepo->dashboard() : null;
 $adminNotePage = max(1, (int) ($_GET['note_page'] ?? 1));
 $adminNoteLimit = 15;
@@ -176,6 +213,8 @@ if ($editNote || $postedAction === 'delete_note' || ($postedAction === 'save_not
     $activeAdminTab = 'documents';
 } elseif (in_array($postedAction, ['save_category', 'delete_category'], true)) {
     $activeAdminTab = 'categories';
+} elseif (in_array($postedAction, ['upload_image', 'delete_image'], true)) {
+    $activeAdminTab = 'media';
 } elseif ($postedAction === 'settings') {
     $activeAdminTab = $postedTab === 'pages' ? 'pages' : 'general';
 } elseif (isset($_GET['note_page'])) {
@@ -187,7 +226,8 @@ if ($editNote || $postedAction === 'delete_note' || ($postedAction === 'save_not
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>관리자 - <?= h(APP_NAME) ?></title>
+    <title>관리자 - <?= h($siteName) ?></title>
+    <?php if ($faviconPath !== ''): ?><link rel="icon" href="<?= h($faviconPath) ?>" type="image/webp"><?php endif; ?>
     <script>
         (function () {
             var theme = localStorage.getItem('red-theme') || 'base';
@@ -213,13 +253,14 @@ if ($editNote || $postedAction === 'delete_note' || ($postedAction === 'save_not
         <input class="admin-tab-input" type="radio" name="admin_tab" id="tab-create" <?= $activeAdminTab === 'create' ? 'checked' : '' ?>>
         <input class="admin-tab-input" type="radio" name="admin_tab" id="tab-documents" <?= $activeAdminTab === 'documents' ? 'checked' : '' ?>>
         <input class="admin-tab-input" type="radio" name="admin_tab" id="tab-categories" <?= $activeAdminTab === 'categories' ? 'checked' : '' ?>>
+        <input class="admin-tab-input" type="radio" name="admin_tab" id="tab-media" <?= $activeAdminTab === 'media' ? 'checked' : '' ?>>
         <input class="admin-tab-input" type="radio" name="admin_tab" id="tab-general" <?= $activeAdminTab === 'general' ? 'checked' : '' ?>>
         <input class="admin-tab-input" type="radio" name="admin_tab" id="tab-pages" <?= $activeAdminTab === 'pages' ? 'checked' : '' ?>>
         <input class="admin-tab-input" type="radio" name="admin_tab" id="tab-inbox" <?= $activeAdminTab === 'inbox' ? 'checked' : '' ?>>
 
         <aside class="admin-sidebar">
             <a class="admin-brand" href="admin.php">
-                <strong><?= h(APP_NAME) ?></strong>
+                <strong><?= h($siteName) ?></strong>
                 <span>Admin Console</span>
             </a>
             <nav class="admin-tab-list" aria-label="관리자 메뉴">
@@ -227,6 +268,7 @@ if ($editNote || $postedAction === 'delete_note' || ($postedAction === 'save_not
                 <label for="tab-create">문서 등록</label>
                 <label for="tab-documents">문서 관리</label>
                 <label for="tab-categories">카테고리 관리</label>
+                <label for="tab-media">이미지 관리</label>
                 <label for="tab-general">기본 설정</label>
                 <label for="tab-pages">페이지 문구</label>
                 <label for="tab-inbox">문의함</label>
@@ -256,7 +298,7 @@ if ($editNote || $postedAction === 'delete_note' || ($postedAction === 'save_not
 
             <section class="admin-hero">
                 <div>
-                    <span class="admin-kicker">TreeView CMS</span>
+                    <span class="admin-kicker"><?= h($siteName) ?></span>
                     <h1>사이트 관리</h1>
                     <p>문서 현황, 방문 흐름, 정책 문구, Contact 문의를 한 화면에서 관리합니다.</p>
                 </div>
@@ -505,15 +547,69 @@ tags: []
                 </div>
             </section>
 
+            <section class="admin-tab-panel admin-panel-media">
+                <div class="admin-section-head">
+                    <div><span class="admin-kicker">Media</span><h2>이미지 관리</h2></div>
+                    <span>업로드 이미지는 WebP로 변환되어 저장됩니다.</span>
+                </div>
+                <div class="admin-split-grid">
+                    <form method="post" class="admin-editor-card" enctype="multipart/form-data">
+                        <input type="hidden" name="action" value="upload_image">
+                        <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                        <label><span>이미지 파일</span><input type="file" name="image_file" accept="image/png,image/jpeg,image/gif,image/webp" required></label>
+                        <label><span>대체 텍스트</span><input type="text" name="alt_text" maxlength="190" placeholder="이미지 설명"></label>
+                        <p class="admin-security-note">jpg, png, gif, webp 파일을 업로드할 수 있습니다. 저장 파일은 문서에서 바로 사용할 수 있도록 WebP로 변환됩니다.</p>
+                        <div class="admin-form-actions"><button class="button primary" type="submit">이미지 업로드</button></div>
+                    </form>
+                    <section class="admin-data-card">
+                        <div class="admin-card-head"><h2>이미지 현황</h2><span><?= number_format(count($mediaAssets)) ?>개</span></div>
+                        <div class="admin-note-insight">
+                            <div><span>최근 이미지</span><strong><?= number_format(count($mediaAssets)) ?></strong></div>
+                            <div><span>파비콘</span><strong><?= $faviconPath !== '' ? '설정됨' : '미설정' ?></strong></div>
+                            <div><span>저장 방식</span><strong>WebP</strong></div>
+                        </div>
+                    </section>
+                </div>
+                <div class="admin-media-grid">
+                    <?php foreach ($mediaAssets as $asset): ?>
+                        <?php
+                        $assetUrl = (string) ($asset['file_url'] ?? '');
+                        $assetAlt = (string) ($asset['alt_text'] ?? '');
+                        $markdownImage = '![' . $assetAlt . '](' . $assetUrl . ')';
+                        ?>
+                        <article class="admin-media-card">
+                            <img src="<?= h($assetUrl) ?>" alt="<?= h($assetAlt) ?>" loading="lazy">
+                            <div>
+                                <strong><?= h((string) ($asset['original_name'] ?? 'image.webp')) ?></strong>
+                                <span><?= h((string) ($asset['width'] ?? 0)) ?>x<?= h((string) ($asset['height'] ?? 0)) ?> · <?= admin_file_size((int) ($asset['size_bytes'] ?? 0)) ?></span>
+                            </div>
+                            <label><span>URL</span><input type="text" value="<?= h($assetUrl) ?>" readonly onclick="this.select()"></label>
+                            <label><span>Markdown</span><input type="text" value="<?= h($markdownImage) ?>" readonly onclick="this.select()"></label>
+                            <form method="post" onsubmit="return confirm('이 이미지를 삭제할까요? 문서에서 사용 중이면 이미지가 보이지 않습니다.');">
+                                <input type="hidden" name="action" value="delete_image">
+                                <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                                <input type="hidden" name="id" value="<?= (int) $asset['id'] ?>">
+                                <button class="button danger" type="submit">삭제</button>
+                            </form>
+                        </article>
+                    <?php endforeach; ?>
+                    <?php if ($mediaAssets === []): ?><p class="muted">아직 업로드된 이미지가 없습니다.</p><?php endif; ?>
+                </div>
+            </section>
+
             <section class="admin-tab-panel admin-panel-general">
                 <div class="admin-section-head">
                     <div><span class="admin-kicker">General</span><h2>공통 설정</h2></div>
-                    <span>푸터와 Contact 기본값</span>
+                    <span>사이트 이름, 파비콘, 푸터와 Contact 기본값</span>
                 </div>
-                <form method="post" class="admin-field-grid">
+                <form method="post" class="admin-field-grid" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="settings">
                     <input type="hidden" name="return_tab" value="general">
                     <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                    <input type="hidden" name="favicon_path" value="<?= h($faviconPath) ?>">
+                    <label><span>사이트 이름</span><input type="text" name="site_name" value="<?= h($siteName) ?>" maxlength="80" required></label>
+                    <label><span>파비콘 이미지</span><input type="file" name="favicon" accept="image/png,image/jpeg,image/gif,image/webp"></label>
+                    <?php if ($faviconPath !== ''): ?><div class="admin-favicon-preview"><img src="<?= h($faviconPath) ?>" alt="favicon"><span><?= h($faviconPath) ?></span></div><?php endif; ?>
                     <label><span>Contact 이메일</span><input type="email" name="contact_email" value="<?= h($settings['contact_email']) ?>" required></label>
                     <label><span>사이드바 방문자 위젯</span><select name="show_sidebar_visitors"><option value="1" <?= ($settings['show_sidebar_visitors'] ?? '1') === '1' ? 'selected' : '' ?>>켜기</option><option value="0" <?= ($settings['show_sidebar_visitors'] ?? '1') === '0' ? 'selected' : '' ?>>끄기</option></select></label>
                     <label><span>상단 대시보드 버튼</span><select name="show_top_dashboard"><option value="1" <?= ($settings['show_top_dashboard'] ?? '1') === '1' ? 'selected' : '' ?>>켜기</option><option value="0" <?= ($settings['show_top_dashboard'] ?? '1') === '0' ? 'selected' : '' ?>>끄기</option></select></label>
@@ -532,6 +628,8 @@ tags: []
                     <input type="hidden" name="action" value="settings">
                     <input type="hidden" name="return_tab" value="pages">
                     <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                    <input type="hidden" name="site_name" value="<?= h($siteName) ?>">
+                    <input type="hidden" name="favicon_path" value="<?= h($faviconPath) ?>">
                     <input type="hidden" name="contact_email" value="<?= h($settings['contact_email']) ?>">
                     <input type="hidden" name="show_sidebar_visitors" value="<?= h((string) ($settings['show_sidebar_visitors'] ?? '1')) ?>">
                     <input type="hidden" name="show_top_dashboard" value="<?= h((string) ($settings['show_top_dashboard'] ?? '1')) ?>">

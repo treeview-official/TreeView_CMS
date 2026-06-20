@@ -6,6 +6,8 @@ final class SettingsRepository
     private static $schemaReady = false;
 
     const DEFAULTS = [
+        'site_name' => 'TreeView CMS',
+        'favicon_path' => '',
         'site_summary' => '문서, 태그, 백링크, 검색, 3D 그래프로 지식을 연결하는 TreeView CMS입니다.',
         'footer_note' => '콘텐츠 오류, 삭제 요청, 개인정보 문의는 Contact 페이지를 통해 접수합니다.',
         'about_body' => "TreeView CMS는 공개 정보, 참고 자료, 개인 노트, 관련 주제를 연결해 정리하는 지식 베이스입니다.\n\n문서는 태그, 백링크, 관련 문서, 출처 링크를 중심으로 관리되며 필요한 경우 수정과 검토를 거쳐 업데이트됩니다.\n\n운영 목적은 흩어진 정보를 쉽게 탐색할 수 있는 구조로 보관하고, 사용자가 맥락을 따라 이동하며 자료를 확인할 수 있게 하는 것입니다.",
@@ -57,6 +59,14 @@ final class SettingsRepository
             $value = Markdown::normalize(trim((string) $values[$key]));
             if ($key === 'contact_email' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
                 throw new RuntimeException('올바른 Contact 이메일을 입력해주세요.');
+            }
+            if ($key === 'site_name') {
+                if ($value === '' || mb_strlen($value, 'UTF-8') > 80) {
+                    throw new RuntimeException('사이트 이름은 1자 이상 80자 이하로 입력해주세요.');
+                }
+            }
+            if ($key === 'favicon_path' && $value !== '' && !preg_match('/\Auploads\/images\/[0-9]{4}\/[0-9]{2}\/[^\/]+\.webp\z/u', $value)) {
+                throw new RuntimeException('파비콘 경로가 올바르지 않습니다.');
             }
             if (in_array($key, ['show_sidebar_visitors', 'show_top_dashboard'], true)) {
                 $value = $value === '1' ? '1' : '0';

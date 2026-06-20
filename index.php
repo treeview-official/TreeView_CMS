@@ -507,6 +507,9 @@ $sidebarTags = sidebar_tags($tags, 14);
 $graph = $repo->graph();
 $dashboard = $isDashboard ? $repo->dashboard() : null;
 $siteSettings = $settings ? $settings->all() : [];
+$siteName = trim((string) ($siteSettings['site_name'] ?? APP_NAME));
+$siteName = $siteName !== '' ? $siteName : APP_NAME;
+$faviconPath = trim((string) ($siteSettings['favicon_path'] ?? ''));
 $showSidebarVisitors = ($siteSettings['show_sidebar_visitors'] ?? '1') === '1';
 $showTopDashboard = ($siteSettings['show_top_dashboard'] ?? '1') === '1';
 $visitorSummary = $showSidebarVisitors ? $repo->visitorSummary() : null;
@@ -530,27 +533,27 @@ $editorCategoryPaths = $current ? ($repo->noteCategoryPaths((int) $current['id']
 $editorCategoryValue = implode("\n", $editorCategoryPaths);
 
 $isEditing = is_admin() && ($mode === 'edit' || $mode === 'new');
-$pageTitle = ($current['title'] ?? APP_NAME) . ' - ' . APP_NAME;
+$pageTitle = ($current['title'] ?? $siteName) . ' - ' . $siteName;
 $description = description_from($current);
 $canonical = $current ? note_url($current['slug']) : base_url() . '/';
 
 if ($isPolicyPage) {
-    $pageTitle = $policyPages[$policyPage]['title'] . ' - ' . APP_NAME;
+    $pageTitle = $policyPages[$policyPage]['title'] . ' - ' . $siteName;
     $description = $policyPages[$policyPage]['description'];
     $canonical = base_url() . '/index.php?page=' . rawurlencode($policyPage);
 } elseif ($isDashboard) {
-    $pageTitle = '대시보드 - ' . APP_NAME;
+    $pageTitle = '대시보드 - ' . $siteName;
     $canonical = base_url() . '/index.php?dashboard=1';
 } elseif ($isCategoryPage) {
-    $pageTitle = $categoryFilter . ' 범주 문서 - ' . APP_NAME;
+    $pageTitle = $categoryFilter . ' 범주 문서 - ' . $siteName;
     $description = $categoryFilter . ' 범주에 포함된 문서 목록입니다.';
     $canonical = base_url() . '/index.php?cat=' . rawurlencode($categoryFilter);
 } elseif ($isSearchPage) {
-    $pageTitle = $query . ' 검색 결과 - ' . APP_NAME;
+    $pageTitle = $query . ' 검색 결과 - ' . $siteName;
     $description = $query . ' 검색어와 관련된 문서 목록입니다.';
     $canonical = base_url() . '/index.php?q=' . rawurlencode($query);
 } elseif ($isTagPage) {
-    $pageTitle = '#' . $tag . ' 관련 문서 - ' . APP_NAME;
+    $pageTitle = '#' . $tag . ' 관련 문서 - ' . $siteName;
     $description = '#' . $tag . ' 태그와 관련된 문서 목록입니다.';
     $canonical = base_url() . '/index.php?tag=' . rawurlencode($tag);
 }
@@ -566,6 +569,7 @@ if ($isPolicyPage) {
     <meta property="og:title" content="<?= h($pageTitle) ?>">
     <meta property="og:description" content="<?= h($description) ?>">
     <meta property="og:url" content="<?= h($canonical) ?>">
+    <?php if ($faviconPath !== ''): ?><link rel="icon" href="<?= h($faviconPath) ?>" type="image/webp"><?php endif; ?>
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -573,7 +577,7 @@ if ($isPolicyPage) {
         <div class="mobile-scrim" data-sidebar-close></div>
         <aside class="sidebar" id="siteSidebar" aria-hidden="false">
             <div class="brand">
-                <a href="index.php"><?= h(APP_NAME) ?></a>
+                <a href="index.php"><?= h($siteName) ?></a>
                 <?php if (is_admin()): ?><a class="icon-button" href="admin.php" title="관리자">+</a><?php endif; ?>
                 <button class="icon-button mobile-only" type="button" data-sidebar-close title="메뉴 닫기">x</button>
             </div>
@@ -718,7 +722,7 @@ if ($isPolicyPage) {
             <?php if ($isPolicyPage): ?>
                 <section class="policy-section">
                     <div class="policy-card">
-                        <p class="eyebrow"><?= h(APP_NAME) ?></p>
+                        <p class="eyebrow"><?= h($siteName) ?></p>
                         <h1><?= h($policyPages[$policyPage]['title']) ?></h1>
                         <div class="policy-copy">
                             <?= render_setting_text((string) ($siteSettings[$policyPages[$policyPage]['setting']] ?? '')) ?>
@@ -744,7 +748,7 @@ if ($isPolicyPage) {
                 <section class="dashboard">
                     <div class="dashboard-heading">
                         <div>
-                            <p class="eyebrow"><?= h(APP_NAME) ?></p>
+                            <p class="eyebrow"><?= h($siteName) ?></p>
                             <h1>페이지 대시보드</h1>
                         </div>
                         <div class="dashboard-hero-metrics">
@@ -911,7 +915,7 @@ if ($isPolicyPage) {
             <?php elseif ($isHome): ?>
                 <section class="home">
                     <div class="home-heading">
-                        <p class="eyebrow"><?= h(APP_NAME) ?></p>
+                        <p class="eyebrow"><?= h($siteName) ?></p>
                         <h1>연결형 지식 베이스</h1>
                         <p>문서는 MySQL에 저장되며 <code>[[링크]]</code>, 태그, 백링크, 검색, 3D 그래프로 서로 연결됩니다.</p>
                     </div>
@@ -1036,7 +1040,7 @@ if ($isPolicyPage) {
         <footer class="site-footer">
             <div class="site-footer-main">
                 <div>
-                    <strong><?= h(APP_NAME) ?></strong>
+                    <strong><?= h($siteName) ?></strong>
                     <p><?= h((string) ($siteSettings['site_summary'] ?? '공개 지식과 참고 자료를 연결해 정리하는 아카이브입니다.')) ?></p>
                 </div>
                 <nav class="site-footer-links" aria-label="Footer navigation">
@@ -1048,7 +1052,7 @@ if ($isPolicyPage) {
                 </nav>
             </div>
             <div class="site-footer-bottom">
-                <span>&copy; <?= date('Y') ?> <?= h(APP_NAME) ?>. All rights reserved.</span>
+                <span>&copy; <?= date('Y') ?> <?= h($siteName) ?>. All rights reserved.</span>
                 <span><?= h((string) ($siteSettings['footer_note'] ?? '콘텐츠 오류, 삭제 요청, 개인정보 문의는 Contact 페이지를 통해 접수합니다.')) ?></span>
             </div>
         </footer>

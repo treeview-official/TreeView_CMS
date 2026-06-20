@@ -8,6 +8,7 @@ require __DIR__ . '/lib/HtmlSanitizer.php';
 require __DIR__ . '/lib/NoteRepository.php';
 require __DIR__ . '/lib/UserRepository.php';
 require __DIR__ . '/lib/SettingsRepository.php';
+require __DIR__ . '/lib/ImageRepository.php';
 
 header('Content-Type: text/html; charset=utf-8');
 date_default_timezone_set(APP_TIMEZONE);
@@ -56,9 +57,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $settings = new SettingsRepository();
+        $settingsValues = [];
+        $siteName = trim((string) ($_POST['site_name'] ?? ''));
+        if ($siteName !== '') {
+            $settingsValues['site_name'] = $siteName;
+        }
         $contactEmail = trim((string) ($_POST['contact_email'] ?? ''));
         if ($contactEmail !== '') {
-            $settings->update(['contact_email' => $contactEmail]);
+            $settingsValues['contact_email'] = $contactEmail;
+        }
+        if (!empty($_FILES['favicon']) && (int) ($_FILES['favicon']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+            $images = new ImageRepository();
+            $favicon = $images->storeUploaded($_FILES['favicon'], $siteName !== '' ? $siteName . ' favicon' : 'favicon');
+            $settingsValues['favicon_path'] = (string) ($favicon['file_url'] ?? '');
+        }
+        if ($settingsValues !== []) {
+            $settings->update($settingsValues);
         }
 
         $users = new UserRepository();
@@ -90,8 +104,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p>MySQL 테이블을 만들고 기본 문서, 사이트 설정<?= $needsAdmin ? ', 관리자 계정' : '' ?>을 추가합니다. 먼저 <code>config.php</code>의 DB 정보를 확인하세요.</p>
         <?php if ($message): ?><div class="notice success"><?= htmlspecialchars($message, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></div><?php endif; ?>
         <?php if ($error): ?><div class="notice danger"><?= htmlspecialchars($error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></div><?php endif; ?>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             <div class="account-form install-form">
+                <h3>사이트 설정</h3>
+                <label><span>사이트 이름</span><input type="text" name="site_name" value="<?= htmlspecialchars(APP_NAME, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" maxlength="80" required></label>
+                <label><span>파비콘 이미지</span><input type="file" name="favicon" accept="image/png,image/jpeg,image/gif,image/webp"></label>
                 <?php if ($needsAdmin): ?>
                     <h3>관리자 계정</h3>
                     <label><span>이름</span><input type="text" name="admin_name" maxlength="80" required></label>

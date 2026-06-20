@@ -6,7 +6,7 @@ TreeView CMS는 PHP와 MySQL이 필요합니다.
 
 - PHP 8.1 이상 권장
 - MySQL 5.7 이상 또는 MariaDB 10.x 이상
-- PHP 확장: PDO, pdo_mysql, mbstring, dom
+- PHP 확장: PDO, pdo_mysql, mbstring, dom, GD(WebP 지원)
 - Apache 사용 시 `mod_rewrite` 권장
 
 ## 2. 데이터베이스 생성
@@ -50,7 +50,7 @@ const ADMIN_PASSWORD = 'long-random-secret';
 https://example.com/install.php
 ```
 
-설치 화면에서 관리자 계정과 Contact 이메일을 입력합니다. 설치가 완료되면 기본 테이블, 기본 문서, 사이트 설정이 생성됩니다.
+설치 화면에서 사이트 이름, 파비콘, 관리자 계정, Contact 이메일을 입력합니다. 설치가 완료되면 기본 테이블, 기본 문서, 사이트 설정이 생성됩니다.
 
 설치기는 `schema.sql`을 먼저 적용한 뒤 `category_tables.sql`을 한 번 더 적용합니다. 카테고리 테이블 정의는 중복되어 있어도 `CREATE TABLE IF NOT EXISTS`로 처리되므로 기존 설치에는 영향을 주지 않습니다.
 

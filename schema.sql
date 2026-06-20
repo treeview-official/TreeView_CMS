@@ -128,3 +128,17 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     created_at DATETIME NOT NULL,
     INDEX idx_contact_messages_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS media_assets (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    original_name VARCHAR(190) NOT NULL,
+    alt_text VARCHAR(190) NOT NULL DEFAULT '',
+    file_path VARCHAR(255) NOT NULL,
+    file_url VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(80) NOT NULL,
+    size_bytes BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    width INT UNSIGNED NOT NULL DEFAULT 0,
+    height INT UNSIGNED NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL,
+    INDEX idx_media_assets_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

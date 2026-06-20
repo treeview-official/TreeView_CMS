@@ -6,6 +6,8 @@
 /config.local.php
 /backup/
 /tmp/
+/uploads/images/*
+!/uploads/images/.gitkeep
 
 .DS_Store
 Thumbs.db

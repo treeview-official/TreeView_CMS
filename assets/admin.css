@@ -89,6 +89,7 @@ body.admin-layout #tab-dashboard:checked ~ .admin-sidebar .admin-tab-list label[
 body.admin-layout #tab-create:checked ~ .admin-sidebar .admin-tab-list label[for="tab-create"],
 body.admin-layout #tab-documents:checked ~ .admin-sidebar .admin-tab-list label[for="tab-documents"],
 body.admin-layout #tab-categories:checked ~ .admin-sidebar .admin-tab-list label[for="tab-categories"],
+body.admin-layout #tab-media:checked ~ .admin-sidebar .admin-tab-list label[for="tab-media"],
 body.admin-layout #tab-general:checked ~ .admin-sidebar .admin-tab-list label[for="tab-general"],
 body.admin-layout #tab-pages:checked ~ .admin-sidebar .admin-tab-list label[for="tab-pages"],
 body.admin-layout #tab-inbox:checked ~ .admin-sidebar .admin-tab-list label[for="tab-inbox"] {
@@ -215,6 +216,7 @@ body.admin-layout #tab-dashboard:checked ~ .admin-main .admin-panel-dashboard,
 body.admin-layout #tab-create:checked ~ .admin-main .admin-panel-create,
 body.admin-layout #tab-documents:checked ~ .admin-main .admin-panel-documents,
 body.admin-layout #tab-categories:checked ~ .admin-main .admin-panel-categories,
+body.admin-layout #tab-media:checked ~ .admin-main .admin-panel-media,
 body.admin-layout #tab-general:checked ~ .admin-main .admin-panel-general,
 body.admin-layout #tab-pages:checked ~ .admin-main .admin-panel-pages,
 body.admin-layout #tab-inbox:checked ~ .admin-main .admin-panel-inbox {
@@ -233,6 +235,7 @@ body.admin-layout .admin-data-card,
 body.admin-layout .admin-section-head,
 body.admin-layout .admin-field-grid,
 body.admin-layout .admin-page-editors,
+body.admin-layout .admin-media-grid,
 body.admin-layout .admin-inbox-list {
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -357,6 +360,7 @@ body.admin-layout textarea,
 body.admin-layout input[type="email"],
 body.admin-layout input[type="text"],
 body.admin-layout input[type="number"],
+body.admin-layout input[type="file"],
 body.admin-layout select {
     width: 100%;
     border: 1px solid var(--line);
@@ -461,6 +465,68 @@ body.admin-layout .admin-note-insight span {
 body.admin-layout .admin-note-insight strong {
     overflow-wrap: anywhere;
     font-size: 17px;
+}
+
+body.admin-layout .admin-favicon-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--panel) 72%, var(--bg) 28%);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    padding: 10px 12px;
+}
+
+body.admin-layout .admin-favicon-preview img {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+body.admin-layout .admin-media-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    padding: 18px;
+}
+
+body.admin-layout .admin-media-card {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--panel) 78%, var(--bg) 22%);
+    padding: 12px;
+}
+
+body.admin-layout .admin-media-card img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 6px;
+    background: var(--bg);
+    object-fit: cover;
+}
+
+body.admin-layout .admin-media-card strong,
+body.admin-layout .admin-media-card span {
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+body.admin-layout .admin-media-card span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+body.admin-layout .admin-media-card form {
+    display: flex;
+    justify-content: flex-end;
 }
 
 body.admin-layout .admin-card-head.compact {
@@ -726,6 +792,7 @@ body.admin-layout .admin-login-card p {
     body.admin-layout .admin-split-grid,
     body.admin-layout .admin-wide-editor,
     body.admin-layout .admin-note-insight,
+    body.admin-layout .admin-media-grid,
     body.admin-layout .admin-field-grid,
     body.admin-layout .admin-page-editors {
         grid-template-columns: 1fr;
