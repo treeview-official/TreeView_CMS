@@ -9,12 +9,18 @@ RewriteRule ^note/(.+)$ index.php?note=$1 [L,QSA,B]
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
 
 <FilesMatch "^(config\.php|.*\.sql|README\.md|debug_note\.php)$">
+    <IfModule mod_authz_core.c>
     Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+    </IfModule>
 </FilesMatch>
 
 <IfModule mod_headers.c>
-    Header always set X-Content-Type-Options "nosniff"
-    Header always set X-Frame-Options "SAMEORIGIN"
-    Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 </IfModule>
