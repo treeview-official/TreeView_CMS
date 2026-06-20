@@ -228,6 +228,57 @@ final class NoteRepository
         }
     }
 
+    public function saveForUser(int $noteId, int $userId): int
+    {
+        try {
+            $this->ensureSavesSchema();
+            $stmt = Database::pdo()->prepare('
+                INSERT IGNORE INTO note_saves (note_id, user_id, created_at)
+                VALUES (:note_id, :user_id, NOW())
+            ');
+            $stmt->execute([
+                'note_id' => $noteId,
+                'user_id' => $userId,
+            ]);
+        } catch (Throwable $e) {
+            return 0;
+        }
+
+        return $this->saveCount($noteId);
+    }
+
+    public function saveCount(int $noteId): int
+    {
+        try {
+            $this->ensureSavesSchema();
+            $stmt = Database::pdo()->prepare('SELECT COUNT(*) FROM note_saves WHERE note_id = :note_id');
+            $stmt->execute(['note_id' => $noteId]);
+            return (int) $stmt->fetchColumn();
+        } catch (Throwable $e) {
+            return 0;
+        }
+    }
+
+    public function hasSaved(int $noteId, int $userId): bool
+    {
+        try {
+            $this->ensureSavesSchema();
+            $stmt = Database::pdo()->prepare('
+                SELECT 1
+                FROM note_saves
+                WHERE note_id = :note_id AND user_id = :user_id
+                LIMIT 1
+            ');
+            $stmt->execute([
+                'note_id' => $noteId,
+                'user_id' => $userId,
+            ]);
+            return (bool) $stmt->fetchColumn();
+        } catch (Throwable $e) {
+            return false;
+        }
+    }
+
     public function save($id, string $title, string $body, array $categoryPaths = null, string $contentType = 'markdown'): array
     {
         $title = trim(Markdown::normalize($title));
@@ -790,6 +841,11 @@ final class NoteRepository
         } catch (Throwable $e) {
             // Likes are optional; document rendering must not fail if this table cannot be created.
         }
+        try {
+            $this->ensureSavesSchema();
+        } catch (Throwable $e) {
+            // Saves are optional; document rendering must not fail if this table cannot be created.
+        }
 
         $pdo->exec('
             CREATE TABLE IF NOT EXISTS categories (
@@ -846,6 +902,21 @@ final class NoteRepository
                 created_at DATETIME NOT NULL,
                 UNIQUE KEY uniq_note_likes_visitor (note_id, visitor_hash),
                 INDEX idx_note_likes_note_id (note_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ');
+    }
+
+    private function ensureSavesSchema()
+    {
+        Database::pdo()->exec('
+            CREATE TABLE IF NOT EXISTS note_saves (
+                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                note_id INT UNSIGNED NOT NULL,
+                user_id INT UNSIGNED NOT NULL,
+                created_at DATETIME NOT NULL,
+                UNIQUE KEY uniq_note_saves_user (note_id, user_id),
+                INDEX idx_note_saves_note_id (note_id),
+                INDEX idx_note_saves_user_id (user_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ');
     }

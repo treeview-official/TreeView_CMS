@@ -3,7 +3,7 @@
 const APP_NAME = 'TreeView CMS';
 
 // If installed in a subdirectory, set it here. Examples: '/', '/red', '/web/red'
-const BASE_PATH = '/web/red';
+const BASE_PATH = '/';
 
 const DB_HOST = 'localhost';
 const DB_NAME = '';

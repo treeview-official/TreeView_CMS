@@ -78,6 +78,16 @@ CREATE TABLE IF NOT EXISTS note_likes (
     INDEX idx_note_likes_note_id (note_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS note_saves (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    note_id INT UNSIGNED NOT NULL,
+    user_id INT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL,
+    UNIQUE KEY uniq_note_saves_user (note_id, user_id),
+    INDEX idx_note_saves_note_id (note_id),
+    INDEX idx_note_saves_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS users (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(190) NOT NULL UNIQUE,

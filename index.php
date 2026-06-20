@@ -284,12 +284,9 @@ function daily_visitor_hash(): string
     return hash('sha256', date('Y-m-d') . '|' . $ip . '|' . $agent . '|' . ADMIN_PASSWORD);
 }
 
-function like_visitor_hash(): string
+function member_like_hash(int $userId): string
 {
-    $forwarded = (string) ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? '');
-    $ip = trim(explode(',', $forwarded)[0] ?: (string) ($_SERVER['REMOTE_ADDR'] ?? ''));
-    $agent = (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
-    return hash('sha256', $ip . '|' . $agent . '|' . ADMIN_PASSWORD);
+    return hash('sha256', 'member-like|' . $userId . '|' . ADMIN_PASSWORD);
 }
 
 function render_setting_text(string $value): string
@@ -352,10 +349,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'like_note') {
             $noteId = (int) ($_POST['note_id'] ?? 0);
             $slug = (string) ($_POST['slug'] ?? '');
+            if (!is_logged_in()) {
+                throw new RuntimeException('로그인 후 좋아요를 누를 수 있습니다.');
+            }
             if ($noteId <= 0) {
                 throw new RuntimeException('좋아요를 처리할 문서를 찾을 수 없습니다.');
             }
-            $visitorHash = like_visitor_hash();
+            $visitorHash = member_like_hash((int) $_SESSION['user_id']);
             $count = $repo->addLike($noteId, $visitorHash);
             $liked = $repo->hasLiked($noteId, $visitorHash);
             if (wants_json()) {
@@ -363,6 +363,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'ok' => true,
                     'count' => $count,
                     'liked' => $liked,
+                ]);
+            }
+            header('Location: index.php?note=' . rawurlencode($slug) . '#note-actions');
+            exit;
+        }
+        if ($action === 'save_note_user') {
+            $noteId = (int) ($_POST['note_id'] ?? 0);
+            $slug = (string) ($_POST['slug'] ?? '');
+            if (!is_logged_in()) {
+                throw new RuntimeException('로그인 후 문서를 저장할 수 있습니다.');
+            }
+            if ($noteId <= 0) {
+                throw new RuntimeException('저장할 문서를 찾을 수 없습니다.');
+            }
+            $count = $repo->saveForUser($noteId, (int) $_SESSION['user_id']);
+            $saved = $repo->hasSaved($noteId, (int) $_SESSION['user_id']);
+            if (wants_json()) {
+                json_response([
+                    'ok' => true,
+                    'count' => $count,
+                    'saved' => $saved,
                 ]);
             }
             header('Location: index.php?note=' . rawurlencode($slug) . '#note-actions');
@@ -469,7 +490,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && !is_admin() && !$isDashboard && $mod
 $backlinks = $current ? $repo->backlinks($current['slug']) : [];
 $currentTags = $current ? Markdown::tags((string) $current['body']) : [];
 $currentLikeCount = $current ? $repo->likeCount((int) $current['id']) : 0;
-$currentHasLiked = $current ? $repo->hasLiked((int) $current['id'], like_visitor_hash()) : false;
+$currentHasLiked = ($current && is_logged_in()) ? $repo->hasLiked((int) $current['id'], member_like_hash((int) $_SESSION['user_id'])) : false;
+$currentSaveCount = $current ? $repo->saveCount((int) $current['id']) : 0;
+$currentHasSaved = ($current && is_logged_in()) ? $repo->hasSaved((int) $current['id'], (int) $_SESSION['user_id']) : false;
 $currentCategoryPath = $current ? ($repo->noteCategoryPath((int) $current['id']) ?: note_category_path($current)) : $categoryFilter;
 $categoryNotes = $repo->categoryChildren(null, 500);
 $skillCategoryPrefix = $currentCategoryPath !== '' ? $currentCategoryPath : (string) ($categoryNotes[0]['path'] ?? '');
@@ -912,15 +935,26 @@ if ($isPolicyPage) {
                     <h1><?= h($current['title']) ?></h1>
                     <?php if ($currentTags !== []): ?><div class="meta"><?php foreach ($currentTags as $name): ?><a class="tag" href="?tag=<?= rawurlencode($name) ?>">#<?= h($name) ?></a><?php endforeach; ?></div><?php endif; ?>
                     <div class="note-actions" id="note-actions" aria-label="문서 반응">
-                        <form method="post" class="like-form" data-like-form>
+                        <form method="post" class="reaction-form" data-like-form>
                             <input type="hidden" name="action" value="like_note">
                             <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
                             <input type="hidden" name="note_id" value="<?= (int) $current['id'] ?>">
                             <input type="hidden" name="slug" value="<?= h((string) $current['slug']) ?>">
-                            <button class="note-action-button like-button <?= $currentHasLiked ? 'active' : '' ?>" type="submit" <?= $currentHasLiked ? 'disabled' : '' ?> aria-pressed="<?= $currentHasLiked ? 'true' : 'false' ?>">
+                            <button class="note-action-button like-button <?= $currentHasLiked ? 'active' : '' ?>" type="submit" <?= $currentHasLiked ? 'disabled' : '' ?> <?= is_logged_in() ? '' : 'data-login-required="true"' ?> aria-pressed="<?= $currentHasLiked ? 'true' : 'false' ?>">
                                 <span class="note-action-icon">♥</span>
                                 <span class="note-action-text"><?= $currentHasLiked ? '좋아요 완료' : '좋아요' ?></span>
                                 <strong data-like-count><?= number_format($currentLikeCount) ?></strong>
+                            </button>
+                        </form>
+                        <form method="post" class="reaction-form" data-save-form>
+                            <input type="hidden" name="action" value="save_note_user">
+                            <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                            <input type="hidden" name="note_id" value="<?= (int) $current['id'] ?>">
+                            <input type="hidden" name="slug" value="<?= h((string) $current['slug']) ?>">
+                            <button class="note-action-button save-button <?= $currentHasSaved ? 'active' : '' ?>" type="submit" <?= $currentHasSaved ? 'disabled' : '' ?> <?= is_logged_in() ? '' : 'data-login-required="true"' ?> aria-pressed="<?= $currentHasSaved ? 'true' : 'false' ?>">
+                                <span class="note-action-icon">★</span>
+                                <span class="note-action-text"><?= $currentHasSaved ? '저장됨' : '저장' ?></span>
+                                <strong data-save-count><?= number_format($currentSaveCount) ?></strong>
                             </button>
                         </form>
                         <button class="note-action-button share-button" type="button" data-share-url="<?= h($canonical) ?>" data-share-title="<?= h((string) $current['title']) ?>">

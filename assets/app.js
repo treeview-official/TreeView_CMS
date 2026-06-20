@@ -158,14 +158,24 @@
     }
 
     function initLikeForms() {
-        document.querySelectorAll('[data-like-form]').forEach((form) => {
-            const button = form.querySelector('.like-button');
-            const count = form.querySelector('[data-like-count]');
+        document.querySelectorAll('[data-like-form], [data-save-form]').forEach((form) => {
+            const isSave = form.hasAttribute('data-save-form');
+            const button = form.querySelector('.note-action-button');
+            const count = form.querySelector(isSave ? '[data-save-count]' : '[data-like-count]');
             const label = form.querySelector('.note-action-text');
 
             if (!button) return;
 
             form.addEventListener('submit', async (event) => {
+                if (button.hasAttribute('data-login-required')) {
+                    event.preventDefault();
+                    const dialog = document.getElementById('accountDialog');
+                    if (dialog && typeof dialog.showModal === 'function') {
+                        dialog.showModal();
+                    }
+                    return;
+                }
+
                 if (!window.fetch || button.disabled) return;
                 event.preventDefault();
 
@@ -184,14 +194,14 @@
                     });
                     const payload = await response.json();
                     if (!response.ok || !payload.ok) {
-                        throw new Error(payload.message || '좋아요를 저장하지 못했습니다.');
+                        throw new Error(payload.message || (isSave ? '문서를 저장하지 못했습니다.' : '좋아요를 저장하지 못했습니다.'));
                     }
 
                     if (count) {
                         count.textContent = Number(payload.count || 0).toLocaleString();
                     }
                     if (label) {
-                        label.textContent = '좋아요 완료';
+                        label.textContent = isSave ? '저장됨' : '좋아요 완료';
                     }
                     button.classList.add('active');
                     button.setAttribute('aria-pressed', 'true');
@@ -202,7 +212,7 @@
                         const original = label.textContent;
                         label.textContent = '다시 시도';
                         window.setTimeout(() => {
-                            label.textContent = original || '좋아요';
+                            label.textContent = original || (isSave ? '저장' : '좋아요');
                         }, 1400);
                     }
                 } finally {
