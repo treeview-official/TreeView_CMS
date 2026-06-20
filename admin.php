@@ -614,6 +614,7 @@ tags: []
                     <label><span>사이드바 방문자 위젯</span><select name="show_sidebar_visitors"><option value="1" <?= ($settings['show_sidebar_visitors'] ?? '1') === '1' ? 'selected' : '' ?>>켜기</option><option value="0" <?= ($settings['show_sidebar_visitors'] ?? '1') === '0' ? 'selected' : '' ?>>끄기</option></select></label>
                     <label><span>상단 대시보드 버튼</span><select name="show_top_dashboard"><option value="1" <?= ($settings['show_top_dashboard'] ?? '1') === '1' ? 'selected' : '' ?>>켜기</option><option value="0" <?= ($settings['show_top_dashboard'] ?? '1') === '0' ? 'selected' : '' ?>>끄기</option></select></label>
                     <label><span>푸터 요약</span><textarea name="site_summary" rows="4" required><?= h($settings['site_summary']) ?></textarea></label>
+                    <label class="wide"><span>Head 추가 코드</span><textarea class="admin-code-lite" name="head_code" rows="8" placeholder="&lt;meta name=&quot;...&quot; content=&quot;...&quot;&gt;&#10;&lt;link rel=&quot;...&quot; href=&quot;...&quot;&gt;&#10;&lt;script&gt;...&lt;/script&gt;"><?= h((string) ($settings['head_code'] ?? '')) ?></textarea></label>
                     <label class="wide"><span>푸터 하단 안내</span><textarea name="footer_note" rows="4" required><?= h($settings['footer_note']) ?></textarea></label>
                     <div class="admin-form-actions"><button class="button primary" type="submit">설정 저장</button></div>
                 </form>
@@ -634,6 +635,7 @@ tags: []
                     <input type="hidden" name="show_sidebar_visitors" value="<?= h((string) ($settings['show_sidebar_visitors'] ?? '1')) ?>">
                     <input type="hidden" name="show_top_dashboard" value="<?= h((string) ($settings['show_top_dashboard'] ?? '1')) ?>">
                     <input type="hidden" name="site_summary" value="<?= h($settings['site_summary']) ?>">
+                    <input type="hidden" name="head_code" value="<?= h((string) ($settings['head_code'] ?? '')) ?>">
                     <input type="hidden" name="footer_note" value="<?= h($settings['footer_note']) ?>">
                     <label><span>About</span><textarea name="about_body" rows="8" required><?= h($settings['about_body']) ?></textarea></label>
                     <label><span>이용방침</span><textarea name="terms_body" rows="10" required><?= h($settings['terms_body']) ?></textarea></label>

@@ -510,6 +510,7 @@ $siteSettings = $settings ? $settings->all() : [];
 $siteName = trim((string) ($siteSettings['site_name'] ?? APP_NAME));
 $siteName = $siteName !== '' ? $siteName : APP_NAME;
 $faviconPath = trim((string) ($siteSettings['favicon_path'] ?? ''));
+$headCode = trim((string) ($siteSettings['head_code'] ?? ''));
 $showSidebarVisitors = ($siteSettings['show_sidebar_visitors'] ?? '1') === '1';
 $showTopDashboard = ($siteSettings['show_top_dashboard'] ?? '1') === '1';
 $visitorSummary = $showSidebarVisitors ? $repo->visitorSummary() : null;
@@ -571,6 +572,9 @@ if ($isPolicyPage) {
     <meta property="og:url" content="<?= h($canonical) ?>">
     <?php if ($faviconPath !== ''): ?><link rel="icon" href="<?= h($faviconPath) ?>" type="image/webp"><?php endif; ?>
     <link rel="stylesheet" href="assets/style.css">
+    <?php if ($headCode !== ''): ?>
+<?= $headCode . "\n" ?>
+    <?php endif; ?>
 </head>
 <body>
     <div class="app-shell">

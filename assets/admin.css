@@ -387,6 +387,14 @@ body.admin-layout .admin-code-textarea {
     font-size: 13px;
 }
 
+body.admin-layout .admin-code-lite {
+    min-height: 180px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    white-space: pre;
+}
+
 body.admin-layout .admin-security-note {
     margin: -4px 0 0;
     border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
