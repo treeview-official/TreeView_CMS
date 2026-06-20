@@ -785,7 +785,11 @@ final class NoteRepository
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ');
 
-        $this->ensureLikesSchema();
+        try {
+            $this->ensureLikesSchema();
+        } catch (Throwable $e) {
+            // Likes are optional; document rendering must not fail if this table cannot be created.
+        }
 
         $pdo->exec('
             CREATE TABLE IF NOT EXISTS categories (
