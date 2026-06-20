@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 final class SettingsRepository
 {
-    private static bool $schemaReady = false;
+    private static $schemaReady = false;
 
-    private const DEFAULTS = [
+    const DEFAULTS = [
         'site_summary' => '문서, 태그, 백링크, 검색, 3D 그래프로 지식을 연결하는 TreeView CMS입니다.',
         'footer_note' => '콘텐츠 오류, 삭제 요청, 개인정보 문의는 Contact 페이지를 통해 접수합니다.',
         'about_body' => "TreeView CMS는 공개 정보, 참고 자료, 개인 노트, 관련 주제를 연결해 정리하는 지식 베이스입니다.\n\n문서는 태그, 백링크, 관련 문서, 출처 링크를 중심으로 관리되며 필요한 경우 수정과 검토를 거쳐 업데이트됩니다.\n\n운영 목적은 흩어진 정보를 쉽게 탐색할 수 있는 구조로 보관하고, 사용자가 맥락을 따라 이동하며 자료를 확인할 수 있게 하는 것입니다.",
@@ -42,7 +42,7 @@ final class SettingsRepository
         return $settings;
     }
 
-    public function update(array $values): void
+    public function update(array $values)
     {
         $stmt = Database::pdo()->prepare('
             INSERT INTO site_settings (setting_key, setting_value, updated_at)
@@ -68,7 +68,7 @@ final class SettingsRepository
         }
     }
 
-    public function saveContactMessage(string $name, string $email, string $subject, string $message): void
+    public function saveContactMessage(string $name, string $email, string $subject, string $message)
     {
         $name = trim(Markdown::normalize($name));
         $email = mb_strtolower(trim($email), 'UTF-8');
@@ -120,7 +120,7 @@ final class SettingsRepository
         return $stmt->fetchAll();
     }
 
-    private function seedDefaults(): void
+    private function seedDefaults()
     {
         $stmt = Database::pdo()->prepare('
             INSERT IGNORE INTO site_settings (setting_key, setting_value, updated_at)
@@ -134,7 +134,7 @@ final class SettingsRepository
         }
     }
 
-    private function upgradeLegacyDefaults(): void
+    private function upgradeLegacyDefaults()
     {
         $oldName = 'Red' . ' Notes';
         $legacy = [
@@ -158,7 +158,7 @@ final class SettingsRepository
         }
     }
 
-    private function ensureSchema(): void
+    private function ensureSchema()
     {
         if (self::$schemaReady) {
             return;

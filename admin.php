@@ -32,7 +32,7 @@ function csrf_token(): string
     return (string) $_SESSION['csrf_token'];
 }
 
-function require_csrf(): void
+function require_csrf()
 {
     if (!hash_equals((string) ($_SESSION['csrf_token'] ?? ''), (string) ($_POST['csrf_token'] ?? ''))) {
         throw new RuntimeException('보안 토큰이 올바르지 않습니다. 다시 시도해주세요.');
@@ -42,8 +42,8 @@ function require_csrf(): void
 function admin_normalize_category_path(string $path): string
 {
     $parts = preg_split('/[>\/]+/u', Markdown::normalize($path)) ?: [];
-    $parts = array_map(static fn (string $part): string => trim($part), $parts);
-    $parts = array_values(array_filter($parts, static fn (string $part): bool => $part !== ''));
+    $parts = array_map(static function (string $part): string { return trim($part); }, $parts);
+    $parts = array_values(array_filter($parts, static function (string $part): bool { return $part !== ''; }));
     return implode('/', $parts);
 }
 

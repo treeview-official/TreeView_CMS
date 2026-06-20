@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 final class HtmlSanitizer
 {
-    private const ALLOWED_TAGS = [
+    const ALLOWED_TAGS = [
         'p', 'br', 'hr', 'strong', 'b', 'em', 'i', 'u', 's', 'mark', 'small',
         'h2', 'h3', 'h4', 'h5', 'h6',
         'ul', 'ol', 'li', 'blockquote', 'pre', 'code',
@@ -12,9 +12,9 @@ final class HtmlSanitizer
         'div', 'span',
     ];
 
-    private const GLOBAL_ATTRS = ['class', 'title'];
+    const GLOBAL_ATTRS = ['class', 'title'];
 
-    private const TAG_ATTRS = [
+    const TAG_ATTRS = [
         'a' => ['href', 'target', 'rel'],
         'img' => ['src', 'alt', 'width', 'height', 'loading'],
         'th' => ['colspan', 'rowspan'],
@@ -50,7 +50,7 @@ final class HtmlSanitizer
         return self::innerHtml($root);
     }
 
-    private static function sanitizeNode(DOMNode $node): void
+    private static function sanitizeNode(DOMNode $node)
     {
         for ($child = $node->firstChild; $child !== null;) {
             $next = $child->nextSibling;
@@ -77,7 +77,7 @@ final class HtmlSanitizer
         }
     }
 
-    private static function sanitizeAttributes(DOMElement $element, string $tag): void
+    private static function sanitizeAttributes(DOMElement $element, string $tag)
     {
         $allowed = array_merge(self::GLOBAL_ATTRS, self::TAG_ATTRS[$tag] ?? []);
         $remove = [];
@@ -128,7 +128,7 @@ final class HtmlSanitizer
         return !preg_match('/^[a-z][a-z0-9+.-]*:/i', $url);
     }
 
-    private static function unwrapNode(DOMNode $node): void
+    private static function unwrapNode(DOMNode $node)
     {
         $parent = $node->parentNode;
         if (!$parent) {

@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 final class UserRepository
 {
-    private static bool $schemaReady = false;
+    private static $schemaReady = false;
 
     public function __construct()
     {
         $this->ensureSchema();
     }
 
-    public function findById(int $id): ?array
+    public function findById(int $id)
     {
         $stmt = Database::pdo()->prepare('SELECT id, email, display_name, role, created_at, last_login_at FROM users WHERE id = :id LIMIT 1');
         $stmt->execute(['id' => $id]);
@@ -121,7 +121,7 @@ final class UserRepository
         return (int) Database::pdo()->query('SELECT COUNT(*) FROM users')->fetchColumn();
     }
 
-    private function recordFailedLogin(int $id, int $failedLogins): void
+    private function recordFailedLogin(int $id, int $failedLogins)
     {
         $failedLogins++;
         if ($failedLogins >= 5) {
@@ -132,7 +132,7 @@ final class UserRepository
         $stmt->execute(['failed' => $failedLogins, 'id' => $id]);
     }
 
-    private function ensureSchema(): void
+    private function ensureSchema()
     {
         if (self::$schemaReady) {
             return;

@@ -2,6 +2,14 @@
 
 TreeView CMS의 버전별 변경사항을 기록합니다.
 
+## v0.2.1 - 2026-06-20
+
+### Fixed
+
+- PHP 7.0 서버에서 `index.php` 업로드 후 500 오류가 발생할 수 있던 문법 호환성 문제 수정
+- `?type`, `void`, typed property, arrow function, `private const` 문법을 PHP 7.0 호환 형태로 변경
+- PHP 파일의 UTF-8 BOM을 제거해 `declare(strict_types=1)` 파싱 오류 방지
+
 ## v0.2.0 - 2026-06-20
 
 ### Added

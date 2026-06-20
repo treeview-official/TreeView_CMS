@@ -19,7 +19,7 @@ require __DIR__ . '/lib/SettingsRepository.php';
 header('Content-Type: text/html; charset=utf-8');
 date_default_timezone_set(APP_TIMEZONE);
 
-function h(?string $value): string
+function h(string $value = null): string
 {
     return htmlspecialchars(html_entity_decode(Markdown::normalize((string) $value), ENT_QUOTES | ENT_HTML5, 'UTF-8'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
@@ -42,7 +42,7 @@ function csrf_token(): string
     return (string) $_SESSION['csrf_token'];
 }
 
-function require_csrf(): void
+function require_csrf()
 {
     $token = (string) ($_POST['csrf_token'] ?? '');
     if (!hash_equals((string) ($_SESSION['csrf_token'] ?? ''), $token)) {
@@ -79,7 +79,7 @@ function url_with(array $changes): string
     return 'index.php' . ($query !== '' ? '?' . $query : '');
 }
 
-function description_from(?array $note): string
+function description_from(array $note = null): string
 {
     if (!$note) {
         return '문서, 태그, 백링크, 검색, 3D 그래프로 연결되는 지식 베이스입니다.';
@@ -714,7 +714,7 @@ if ($isPolicyPage) {
                         <section class="dashboard-panel wide">
                             <h2>날짜별 방문자</h2>
                             <div class="visit-bars">
-                                <?php $maxVisit = max(1, ...array_map(static fn ($item) => (int) $item['visitors'], $dashboard['dailyVisits'])); ?>
+                                <?php $maxVisit = max(1, ...array_map(static function ($item) { return (int) $item['visitors']; }, $dashboard['dailyVisits'])); ?>
                                 <?php foreach ($dashboard['dailyVisits'] as $item): ?>
                                     <div>
                                         <span><?= h(date('m.d', strtotime($item['visit_date']))) ?></span>
@@ -729,7 +729,7 @@ if ($isPolicyPage) {
                         <section class="dashboard-panel wide">
                             <h2>인기 태그</h2>
                             <div class="tag-bars">
-                                <?php $maxTag = max(1, ...array_map(static fn ($item) => (int) $item['count'], $dashboard['topTags'])); ?>
+                                <?php $maxTag = max(1, ...array_map(static function ($item) { return (int) $item['count']; }, $dashboard['topTags'])); ?>
                                 <?php foreach ($dashboard['topTags'] as $item): ?>
                                     <a href="?tag=<?= rawurlencode($item['name']) ?>"><span>#<?= h($item['name']) ?></span><i style="width: <?= max(6, round(((int) $item['count'] / $maxTag) * 100)) ?>%"></i><b><?= (int) $item['count'] ?></b></a>
                                 <?php endforeach; ?>

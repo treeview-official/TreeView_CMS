@@ -19,7 +19,7 @@ final class Markdown
         $h1Skipped = false;
         $listType = null;
 
-        $closeList = static function () use (&$html, &$listType): void {
+        $closeList = static function () use (&$html, &$listType) {
             if ($listType !== null) {
                 $html[] = '</' . $listType . '>';
                 $listType = null;

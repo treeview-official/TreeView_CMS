@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 final class Database
 {
-    private static ?PDO $pdo = null;
+    private static $pdo = null;
 
     public static function pdo(): PDO
     {

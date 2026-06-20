@@ -16,7 +16,7 @@ $message = null;
 $error = null;
 $needsAdmin = true;
 
-function run_sql_file(PDO $pdo, string $file): void
+function run_sql_file(PDO $pdo, string $file)
 {
     $path = __DIR__ . '/' . $file;
     if (!is_file($path)) {

@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 final class NoteRepository
 {
-    private static bool $schemaReady = false;
+    private static $schemaReady = false;
 
     public function __construct()
     {
         $this->ensureSchema();
     }
 
-    public function all(?string $query = null, ?string $tag = null, ?int $limit = null, int $offset = 0): array
+    public function all(string $query = null, string $tag = null, int $limit = null, int $offset = 0): array
     {
         $params = [];
         $where = [];
@@ -69,7 +69,7 @@ final class NoteRepository
         return $stmt->fetchAll();
     }
 
-    public function countAll(?string $query = null, ?string $tag = null): int
+    public function countAll(string $query = null, string $tag = null): int
     {
         $params = [];
         $where = [];
@@ -118,7 +118,7 @@ final class NoteRepository
         return (int) $stmt->fetchColumn();
     }
 
-    public function findBySlug(string $slug): ?array
+    public function findBySlug(string $slug)
     {
         $stmt = Database::pdo()->prepare('SELECT * FROM notes WHERE slug = :slug LIMIT 1');
         $stmt->execute(['slug' => $slug]);
@@ -126,7 +126,7 @@ final class NoteRepository
         return $note ?: null;
     }
 
-    public function findById(int $id): ?array
+    public function findById(int $id)
     {
         $stmt = Database::pdo()->prepare('SELECT * FROM notes WHERE id = :id LIMIT 1');
         $stmt->execute(['id' => $id]);
@@ -145,7 +145,7 @@ final class NoteRepository
         return (int) $stmt->fetchColumn();
     }
 
-    public function recordVisit(?int $noteId, string $path, string $visitorHash): void
+    public function recordVisit($noteId, string $path, string $visitorHash)
     {
         $stmt = Database::pdo()->prepare('
             INSERT INTO note_visits (note_id, path, visitor_hash, visit_date, created_at)
@@ -157,7 +157,7 @@ final class NoteRepository
         $stmt->execute();
     }
 
-    public function recordSearch(string $query, string $tag, int $resultCount): void
+    public function recordSearch(string $query, string $tag, int $resultCount)
     {
         $query = ltrim(trim(Markdown::normalize($query)), '#');
         $tag = ltrim(trim(Markdown::normalize($tag)), '#');
@@ -177,7 +177,7 @@ final class NoteRepository
         ]);
     }
 
-    public function save(?int $id, string $title, string $body, ?array $categoryPaths = null, string $contentType = 'markdown'): array
+    public function save($id, string $title, string $body, array $categoryPaths = null, string $contentType = 'markdown'): array
     {
         $title = trim(Markdown::normalize($title));
         $body = Markdown::normalize($body);
@@ -214,7 +214,7 @@ final class NoteRepository
         return $this->findById($id) ?? [];
     }
 
-    public function delete(int $id): void
+    public function delete(int $id)
     {
         $stmt = Database::pdo()->prepare('DELETE FROM notes WHERE id = :id');
         $stmt->execute(['id' => $id]);
@@ -294,7 +294,7 @@ final class NoteRepository
         return $stmt->fetchAll();
     }
 
-    public function categoryChildren(?string $parentPath = null, int $limit = 100): array
+    public function categoryChildren(string $parentPath = null, int $limit = 100): array
     {
         $limit = max(1, min(500, $limit));
         $parentId = null;
@@ -450,13 +450,13 @@ final class NoteRepository
         return $category ?: [];
     }
 
-    public function deleteCategory(int $id): void
+    public function deleteCategory(int $id)
     {
         $stmt = Database::pdo()->prepare('DELETE FROM categories WHERE id = :id');
         $stmt->execute(['id' => $id]);
     }
 
-    private function findCategoryByPath(string $path): ?array
+    private function findCategoryByPath(string $path)
     {
         $path = $this->normalizeCategoryPath($path);
         if ($path === '') {
@@ -468,7 +468,7 @@ final class NoteRepository
         return $category ?: null;
     }
 
-    private function createCategoryPath(string $path): ?int
+    private function createCategoryPath(string $path)
     {
         $path = $this->resolveCategoryPath($path);
         if ($path === '') {
@@ -688,7 +688,7 @@ final class NoteRepository
         return $stmt->fetchAll();
     }
 
-    private function ensureSchema(): void
+    private function ensureSchema()
     {
         if (self::$schemaReady) {
             return;
@@ -772,7 +772,7 @@ final class NoteRepository
         self::$schemaReady = true;
     }
 
-    private function refreshRelations(int $id, string $body): void
+    private function refreshRelations(int $id, string $body)
     {
         $pdo = Database::pdo();
         $pdo->prepare('DELETE FROM note_tags WHERE note_id = :id')->execute(['id' => $id]);
@@ -793,7 +793,7 @@ final class NoteRepository
         }
     }
 
-    private function refreshCategory(int $id, string $body, ?array $categoryPaths = null): void
+    private function refreshCategory(int $id, string $body, array $categoryPaths = null)
     {
         $meta = Markdown::metadata($body);
         if ($categoryPaths === null) {
@@ -824,7 +824,7 @@ final class NoteRepository
         }
     }
 
-    private function syncExistingCategories(): void
+    private function syncExistingCategories()
     {
         $stmt = Database::pdo()->query('
             SELECT n.id, n.body
@@ -843,7 +843,7 @@ final class NoteRepository
         }
     }
 
-    private function uniqueSlug(string $slug, ?int $ignoreId = null): string
+    private function uniqueSlug(string $slug, int $ignoreId = null): string
     {
         $base = $slug;
         $i = 2;
